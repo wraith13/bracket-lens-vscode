@@ -2,6 +2,7 @@
     "name": "bracket-lens",
     "displayName": "Bracket Lens",
     "description": "Show bracket head on closing bracket.",
+    "icon": "images/bracketlenshex.128.png",
     "version": "0.0.1",
     "license": "SEE LICENSE IN LICENSE_1_0.txt",
     "engines": {
