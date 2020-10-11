@@ -1,0 +1,16 @@
+{
+    "bracketLens.reportProfile.title": "プロファイル報告",
+    "bracketLens.enabled.description": "TBD",
+    "bracketLens.color.description": "TBD",
+    "bracketLens.prefix.description": "TBD",
+    "🚫 You have already started the profile.": "🚫 既にプロファイル開始しています。",
+    "⏱ Start Profile!": "⏱ プロファイル開始！",
+    "🏁 Stop Profile!": "🏁 プロファイル終了！",
+    "📊 Profile Report": "📊 プロファイル報告",
+    "⚖ Overview": "⚖ 概要",
+    "🔬 Busy Details": "🔬 Busy 内訳",
+    "🚫 Profile has not been started.": "🚫 プロファイルは開始されていません。",
+    "%1 is too large! Background Phi Colors has been disabled. But you can over the limit!": "%1 は大きすぎます！ Background Phi Colors は無効化されました。 しかし、制限を無視することもできます！",
+    "Close": "閉じる",
+    "Over the limit": "制限を無視する"
+}

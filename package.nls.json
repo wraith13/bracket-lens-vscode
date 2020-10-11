@@ -1,0 +1,16 @@
+{
+    "bracketLens.reportProfile.title": "Report Profile",
+    "bracketLens.enabled.description": "TBD",
+    "bracketLens.color.description": "TBD",
+    "bracketLens.prefix.description": "TBD",
+    "🚫 You have already started the profile.": "🚫 You have already started the profile.",
+    "⏱ Start Profile!": "⏱ Start Profile!",
+    "🏁 Stop Profile!": "🏁 Stop Profile!",
+    "📊 Profile Report": "📊 Profile Report",
+    "⚖ Overview": "⚖ Overview",
+    "🔬 Busy Details": "🔬 Busy Details",
+    "🚫 Profile has not been started.": "🚫 Profile has not been started.",
+    "%1 is too large! Background Phi Colors has been disabled. But you can over the limit!": "%1 is too large! Background Phi Colors has been disabled. But you can over the limit!",
+    "Close": "Close",
+    "Over the limit": "Over the limit"
+}

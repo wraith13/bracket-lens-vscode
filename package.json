@@ -4,6 +4,7 @@
     "description": "Show bracket head on closing bracket.",
     "icon": "images/bracketlenshex.128.png",
     "version": "0.0.1",
+    "publisher": "wraith13",
     "license": "SEE LICENSE IN LICENSE_1_0.txt",
     "engines": {
         "vscode": "^1.50.0"
@@ -12,14 +13,63 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:bracket-lens.helloWorld"
+        "*"
     ],
     "main": "./out/source/extension.js",
     "contributes": {
         "commands": [
             {
-                "command": "bracket-lens.helloWorld",
-                "title": "Hello World"
+                "command": "bracketLens.helloWorld",
+                "title": "Hello World",
+                "category": "Bracket Lens"
+            },
+            {
+                "command": "bracketLens.reportProfile",
+                "title": "%bracketLens.reportProfile.title%",
+                "category": "Bracket Lens"
+            }
+        ],
+        "configuration": [
+            {
+                "title": "Bracket Lens",
+                "properties": {
+                    "bracketLens.enabled": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "%bracketLens.enabled.description%",
+                        "scope": "language-overridable"
+                    },
+                    "bracketLens.color": {
+                        "type": "string",
+                        "default": "comments",
+                        "oneOf": [
+                            {
+                                "enum": [
+                                    "comments",
+                                    "strings",
+                                    "keywords",
+                                    "numbers",
+                                    "types",
+                                    "functions",
+                                    "variables",
+                                    "textMateRules",
+                                    "semanticHighlighting"
+                                ]
+                            },
+                            {
+                                "$ref": "vscode://schemas/textmate-colors#definitions/colorGroup"
+                            }
+                        ],
+                        "description": "%bracketLens.color.description%",
+                        "scope": "language-overridable"
+                    },
+                    "bracketLens.prefix": {
+                        "type": "string",
+                        "default": "👉 ",
+                        "description": "%bracketLens.prefix.description%",
+                        "scope": "language-overridable"
+                    }
+                }
             }
         ]
     },
