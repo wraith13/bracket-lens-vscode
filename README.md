@@ -1,65 +1,80 @@
-# bracket-lens README
+# Bracket Lens for VS Code
 
-This is the README for your extension "bracket-lens". After writing up a brief description, we recommend including the following sections.
+[![Visual Studio Marketplace](https://vsmarketplacebadge.apphb.com/version/wraith13.bracket-lens.svg) ![installs](https://vsmarketplacebadge.apphb.com/installs/wraith13.bracket-lens.svg) ![rating](https://vsmarketplacebadge.apphb.com/rating/wraith13.bracket-lens.svg)](https://marketplace.visualstudio.com/items?itemName=wraith13.bracket-lens)
+
+Show bracket head on closing bracket.
+
+🚧 Under development.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+### Screenshots
 
-For example if there is an image subfolder under your extension project workspace:
+## Tutorial
 
-\!\[feature X\]\(images/feature-x.png\)
+### 0. ⬇️ Install Bracket Lens
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Show extension side bar within VS Code(Mac:`Command`+`Shift`+`X`, Windows and Linux: `Ctrl`+`Shift`+`X`), type `Bracket Lens` and press `Enter` and click `Install`.
 
-## Requirements
+### 1. 🚀 Edit settings
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Launch Command Palette, Execute `Bracket Lens: Edit Settings` command or click gear icon on status bar or keyboard shortcut ( Mac:`Command`+`Shift`+`,`, Windows and Linux: `Ctrl`+`Shift`+`,` ). You can edit VS Code settings.
+
+### 2. 🔧 Next step
+
+You can change [settings](#extension-settings). And you can edit [keyboard shortcuts](#keyboard-shortcut-settings) by `keybindings.json`.
+
+Enjoy!
+
+## Commands
+
+* `Bracket Lens: Edit Settings` : Edit VS Code's settings.
+* `Bracket Lens: Undo Setting` : Undo VS Code's settings.
+* `Bracket Lens: Redo Setting` : Redo VS Code's settings.
+* `Bracket Lens: Clear Setting History` : Clear recently information. This command can only be used in debug mode.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+This extension contributes the following settings by [`settings.json`](https://code.visualstudio.com/docs/customization/userandworkspace#_creating-user-and-workspace-settings)( Mac: `Command`+`,`, Windows / Linux: `File` -> `Preferences` -> `User Settings` ):
 
-For example:
+* `bracketLens.preview`: Temporarily apply the settings before confirming.
+* `bracketLens.disabledPreviewSettings`: A list of settings for which you want to disable the settings preview.
+* `bracketLens.debug`: Debug mode.
+* `bracketLens.statusBarAlignment`: Alignment on status bar.
+* `bracketLens.statusBarText`: Status bar's label.
 
-This extension contributes the following settings:
+## Keyboard shortcut Settings
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+You can edit keyboard shortcuts by [`keybindings.json`](https://code.visualstudio.com/docs/customization/keybindings#_customizing-shortcuts)
+( Mac: `Code` -> `Preferences` -> `Keyboard Shortcuts`, Windows / Linux: `File` -> `Preferences` -> `Keyboard Shortcuts`).
 
-## Known Issues
+Command name on `keybindings.json` is diffarent from on Command Pallete. See below table.
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+|on Command Pallete|on keybindings.json|default Keyboard shortcut|
+|-|-|-|
+|`Bracket Lens: Edit Settings`|`bracketLens.editSettings`|Mac:`Command`+`Shift`+`,`, Windows and Linux: `Ctrl`+`Shift`+`,`|
+|`Bracket Lens: Undo Setting`|`bracketLens.undoSetting`|(none)|
+|`Bracket Lens: Redo Setting`|`bracketLens.redoSetting`|(none)|
+|`Bracket Lens: Clear Setting History`|`bracketLens.clearHistory`|(none)|
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+see ChangLog on [marketplace](https://marketplace.visualstudio.com/items/wraith13.bracket-lens/changelog) or [github](https://github.com/wraith13/bracket-lens-vscode/blob/master/CHANGELOG.md)
 
-### 1.0.0
+## Support
 
-Initial release of ...
+[GitHub Issues](https://github.com/wraith13/bracket-lens-vscode/issues)
 
-### 1.0.1
+## License
 
-Fixed issue #.
+[Boost Software License](https://github.com/wraith13/bracket-lens-vscode/blob/master/LICENSE_1_0.txt)
 
-### 1.1.0
+## Other extensions of wraith13's work
 
-Added features X, Y, and Z.
+|Icon|Name|Description|
+|---|---|---|
+|![](https://wraith13.gallerycdn.vsassets.io/extensions/wraith13/background-phi-colors/3.1.0/1581619161244/Microsoft.VisualStudio.Services.Icons.Default) |[Background Phi Colors](https://marketplace.visualstudio.com/items?itemName=wraith13.background-phi-colors)|This extension colors the background in various ways.|
+|![](https://wraith13.gallerycdn.vsassets.io/extensions/wraith13/blitz/1.10.0/1600673285404/Microsoft.VisualStudio.Services.Icons.Default) |[Blitz](https://marketplace.visualstudio.com/items?itemName=wraith13.blitz)|Provide a quick and comfortable way to change settings by quick pick based UI.|
+|![](https://wraith13.gallerycdn.vsassets.io/extensions/wraith13/zoombar-vscode/1.2.1/1563089420894/Microsoft.VisualStudio.Services.Icons.Default) |[Zoom Bar](https://marketplace.visualstudio.com/items?itemName=wraith13.zoombar-vscode)|Zoom UI in status bar for VS Code.|
 
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+See all wraith13's  expansions: <https://marketplace.visualstudio.com/publishers/wraith13>
