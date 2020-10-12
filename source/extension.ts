@@ -22,7 +22,7 @@ interface BracketEntry
     end: vscode.Position;
     items: BracketEntry[];
 }
-export const parseBrackets = (textEditor: vscode.TextEditor) => profile
+export const parseBrackets = (document: vscode.TextDocument) => profile
 (
     "parseBrackets",
     (): BracketEntry[] =>
@@ -32,7 +32,7 @@ export const parseBrackets = (textEditor: vscode.TextEditor) => profile
         return result;
     }
 );
-export const getBracketHeader = (textEditor: vscode.TextEditor, entry: BracketEntry) => profile
+export const getBracketHeader = (document: vscode.TextDocument, entry: BracketEntry) => profile
 (
     "getBracketHeader",
     (): string =>
@@ -53,7 +53,7 @@ export const getBracketDecorationSource = (textEditor: vscode.TextEditor) => pro
         {
             if (entry.start.line < entry.end.line)
             {
-                const bracketHeader = getBracketHeader(textEditor, entry);
+                const bracketHeader = getBracketHeader(textEditor.document, entry);
                 if (0 < bracketHeader.length)
                 {
                     result.push
@@ -65,7 +65,7 @@ export const getBracketDecorationSource = (textEditor: vscode.TextEditor) => pro
                 entry.items.map(scanner);
             }
         };
-        parseBrackets(textEditor).map(scanner);
+        parseBrackets(textEditor.document).map(scanner);
 
         //  ここで刈り込み
 
@@ -114,6 +114,116 @@ export const updateDecoration = (textEditor: vscode.TextEditor) => profile
 export const onDidChangeConfiguration = () =>
 {
     Config.root.entries.forEach(i => i.clear());
+};
+class DocumentDecorationCacheEntry
+{
+    brackets: BracketEntry[];
+    public constructor(document: vscode.TextDocument)
+    {
+        this.brackets = parseBrackets(document);
+    }
+}
+class EditorDecorationCacheEntry
+{
+    selection: vscode.Selection;
+    public constructor
+    (
+        textEditor: vscode.TextEditor,
+        currentDocumentDecorationCache: DocumentDecorationCacheEntry,
+        previousEditorDecorationCache? :EditorDecorationCacheEntry
+    )
+    {
+    }
+}
+const documentDecorationCache = new Map<vscode.TextDocument, DocumentDecorationCacheEntry>();
+const editorDecorationCache = new Map<vscode.TextEditor, EditorDecorationCacheEntry>();
+const valueThen = <ValueT, ResultT>(value: ValueT | undefined, f: (value: ValueT) => ResultT) =>
+{
+    if (value)
+    {
+        return f(value);
+    }
+    return undefined;
+};
+const activeTextEditor = <T>(f: (textEditor: vscode.TextEditor) => T) => valueThen(vscode.window.activeTextEditor, f);
+export const clearDecorationCache = (document?: vscode.TextDocument): void =>
+{
+    if (document)
+    {
+        documentDecorationCache.delete(document);
+        for(const textEditor of editorDecorationCache.keys())
+        {
+            if (document === textEditor.document)
+            {
+                editorDecorationCache.delete(textEditor);
+            }
+        }
+    }
+    else
+    {
+        for(const textEditor of editorDecorationCache.keys())
+        {
+            if (vscode.window.visibleTextEditors.indexOf(textEditor) < 0)
+            {
+                editorDecorationCache.delete(textEditor);
+            }
+        }
+    }
+};
+const getDocumentTextLength = (document: vscode.TextDocument) => document.offsetAt
+(
+    document.lineAt(document.lineCount - 1).range.end
+);
+//const isClip = (lang: string, textLength: number) => clipByVisibleRange.get(lang)(textLength / Math.max(fileSizeLimit.get(lang), 1024));
+const lastUpdateStamp = new Map<vscode.TextEditor, number>();
+export const delayUpdateDecoration = (textEditor: vscode.TextEditor): void =>
+{
+    const updateStamp = vscel.profiler.getTicks();
+    lastUpdateStamp.set(textEditor, updateStamp);
+    const textLength = getDocumentTextLength(textEditor.document);
+    const logUnit = 16 *1024;
+    const logRate = Math.pow(Math.max(textLength, logUnit) / logUnit, 1.0 / 2.0);
+    //const lang = textEditor.document.languageId;
+    const delay = false ? //isClip(lang, textLength) ?
+            30: // clipDelay.get(lang):
+            logRate *
+            (
+                10 + //basicDelay.get(lang) +
+                (
+                    undefined === documentDecorationCache.get(textEditor.document) ?
+                        50: // additionalDelay.get(lang):
+                        0
+                )
+            );
+    //console.log(`document: ${textEditor.document.fileName}, textLength: ${textLength}, logRate: ${logRate}, delay: ${delay}`);
+    setTimeout
+    (
+        () =>
+        {
+            if (lastUpdateStamp.get(textEditor) === updateStamp)
+            {
+                lastUpdateStamp.delete(textEditor);
+                updateDecoration(textEditor);
+            }
+        },
+        delay
+    );
+};
+export const updateAllDecoration = () =>
+    vscode.window.visibleTextEditors.forEach(i => delayUpdateDecoration(i));
+export const onDidChangeWorkspaceFolders = onDidChangeConfiguration;
+export const onDidChangeActiveTextEditor = (): void =>
+{
+    clearDecorationCache();
+    activeTextEditor(delayUpdateDecoration);
+};
+export const onDidCloseTextDocument = clearDecorationCache;
+export const onDidChangeTextDocument = (document: vscode.TextDocument): void =>
+{
+    clearDecorationCache(document);
+    vscode.window.visibleTextEditors
+        .filter(i => i.document === document)
+        .forEach(i => delayUpdateDecoration(i));
 };
 export let extensionContext: vscode.ExtensionContext;
 export const activate = async (context: vscode.ExtensionContext) =>
@@ -170,98 +280,7 @@ export const activate = async (context: vscode.ExtensionContext) =>
         //vscode.window.onDidChangeTextEditorSelection(() => onDidChangeTextEditorSelection()),
         //vscode.window.onDidChangeTextEditorVisibleRanges(() => onDidChangeTextEditorVisibleRanges()),
         //vscode.window.onDidChangeActiveColorTheme(() => onDidChangeActiveColorTheme());
-        vscode.window.onDidChangeVisibleTextEditors(textEditers => onDidChangeVisibleTextEditors(textEditers)),
+        //vscode.window.onDidChangeVisibleTextEditors(textEditers => onDidChangeVisibleTextEditors(textEditers)),
     );
 };
-const documentDecorationCache = new Map<vscode.TextDocument, DocumentDecorationCacheEntry>();
-const editorDecorationCache = new Map<vscode.TextEditor, EditorDecorationCacheEntry>();
-const valueThen = <valueT, resultT>(value: valueT | undefined, f: (value: valueT) => resultT) =>
-{
-    if (value)
-    {
-        return f(value);
-    }
-    return undefined;
-};
-const activeTextEditor = <T>(f: (textEditor: vscode.TextEditor) => T) => valueThen(vscode.window.activeTextEditor, f);
-export const clearDecorationCache = (document?: vscode.TextDocument): void =>
-{
-    if (document)
-    {
-        documentDecorationCache.delete(document);
-        for(const textEditor of editorDecorationCache.keys())
-        {
-            if (document === textEditor.document)
-            {
-                editorDecorationCache.delete(textEditor);
-            }
-        }
-    }
-    else
-    {
-        for(const textEditor of editorDecorationCache.keys())
-        {
-            if (vscode.window.visibleTextEditors.indexOf(textEditor) < 0)
-            {
-                editorDecorationCache.delete(textEditor);
-            }
-        }
-    }
-};
-const getDocumentTextLength = (document: vscode.TextDocument) => document.offsetAt
-(
-    document.lineAt(document.lineCount - 1).range.end
-);
-//const isClip = (lang: string, textLength: number) => clipByVisibleRange.get(lang)(textLength / Math.max(fileSizeLimit.get(lang), 1024));
-const lastUpdateStamp = new Map<vscode.TextEditor, number>();
-export const delayUpdateDecoration = (textEditor: vscode.TextEditor): void =>
-{
-    const updateStamp = vscel.profiler.getTicks();
-    lastUpdateStamp.set(textEditor, updateStamp);
-    const textLength = getDocumentTextLength(textEditor.document);
-    const logUnit = 16 *1024;
-    const logRate = Math.pow(Math.max(textLength, logUnit) / logUnit, 1.0 / 2.0);
-    const lang = textEditor.document.languageId;
-    const delay = false ? //isClip(lang, textLength) ?
-            30: // clipDelay.get(lang):
-            logRate *
-            (
-                10 + //basicDelay.get(lang) +
-                (
-                    undefined === documentDecorationCache.get(textEditor.document) ?
-                        50: // additionalDelay.get(lang):
-                        0
-                )
-            );
-    //console.log(`document: ${textEditor.document.fileName}, textLength: ${textLength}, logRate: ${logRate}, delay: ${delay}`);
-    setTimeout
-    (
-        () =>
-        {
-            if (lastUpdateStamp.get(textEditor) === updateStamp)
-            {
-                lastUpdateStamp.delete(textEditor);
-                updateDecoration(textEditor);
-            }
-        },
-        delay
-    );
-};
-export const updateAllDecoration = () =>
-    vscode.window.visibleTextEditors.forEach(i => delayUpdateDecoration(i));
-export const onDidChangeWorkspaceFolders = onDidChangeConfiguration;
-export const onDidChangeActiveTextEditor = (): void =>
-{
-    clearDecorationCache();
-    activeTextEditor(delayUpdateDecoration);
-};
-export const onDidCloseTextDocument = clearDecorationCache;
-export const onDidChangeTextDocument = (document: vscode.TextDocument): void =>
-{
-    clearDecorationCache(document);
-    vscode.window.visibleTextEditors
-        .filter(i => i.document === document)
-        .forEach(i => delayUpdateDecoration(i));
-};
-
 export const deactivate = () => {};
