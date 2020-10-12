@@ -22,6 +22,13 @@ interface BracketEntry
     end: vscode.Position;
     items: BracketEntry[];
 }
+interface BracketContext
+{
+    parentEntry: BracketEntry | undefined;
+    previousEntry: BracketEntry | undefined;
+    entry: BracketEntry;
+    nextEntry: BracketEntry | undefined;
+}
 export const parseBrackets = (document: vscode.TextDocument) => profile
 (
     "parseBrackets",
@@ -32,12 +39,23 @@ export const parseBrackets = (document: vscode.TextDocument) => profile
         return result;
     }
 );
-export const getBracketHeader = (document: vscode.TextDocument, entry: BracketEntry) => profile
+export const getBracketHeader =
+(
+    document: vscode.TextDocument,
+    context: BracketContext
+) => profile
 (
     "getBracketHeader",
     (): string =>
     {
-        return "";
+        const lineHead = new vscode.Position(context.entry.start.line, 0);
+        let result = document.getText(new vscode.Range(lineHead, context.entry.start)).trim();
+        if (result.length <= 0 && 0 < context.entry.start.line)
+        {
+            const previousLineHead = new vscode.Position(context.entry.start.line -1, 0);
+            result = document.getText(new vscode.Range(previousLineHead, lineHead)).trim();
+        }
+        return result;
     }
 );
 export const getBracketDecorationSource = (textEditor: vscode.TextEditor) => profile
@@ -49,23 +67,41 @@ export const getBracketDecorationSource = (textEditor: vscode.TextEditor) => pro
             range: vscode.Range,
             bracketHeader: string,
         }[] = [];
-        const scanner = (entry: BracketEntry) =>
+        const scanner = (context: BracketContext) =>
         {
-            if (entry.start.line < entry.end.line)
+            if (context.entry.start.line < context.entry.end.line)
             {
-                const bracketHeader = getBracketHeader(textEditor.document, entry);
+                const bracketHeader = getBracketHeader(textEditor.document, context);
                 if (0 < bracketHeader.length)
                 {
                     result.push
                     ({
-                        range: new vscode.Range(new vscode.Position(entry.end.line, entry.end.character -1), entry.end),
+                        range: new vscode.Range(new vscode.Position(context.entry.end.line, context.entry.end.character -1), context.entry.end),
                         bracketHeader,
                     });
                 }
-                entry.items.map(scanner);
-            }
+                context.entry.items.map
+                (
+                    (entry, index, array) => scanner
+                    ({
+                        parentEntry: context.entry,
+                        previousEntry:array[index -1],
+                        entry,
+                        nextEntry:array[index +1],
+                    })
+                );
+                    }
         };
-        parseBrackets(textEditor.document).map(scanner);
+        parseBrackets(textEditor.document).map
+        (
+            (entry, index, array) => scanner
+            ({
+                parentEntry:undefined,
+                previousEntry:array[index -1],
+                entry,
+                nextEntry:array[index +1],
+            })
+        );
 
         //  ここで刈り込み
 
