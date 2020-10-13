@@ -30,6 +30,30 @@ interface BracketContext
     entry: BracketEntry;
     nextEntry: BracketEntry | undefined;
 }
+interface BracketDecorationSource
+{
+    range: vscode.Range;
+    bracketHeader: string;
+}
+
+
+class DocumentDecorationCacheEntry
+{
+    brackets: BracketEntry[];
+    decorationSource: BracketDecorationSource[] = [];
+    public constructor(document: vscode.TextDocument)
+    {
+        this.brackets = parseBrackets(document);
+    }
+}
+class EditorDecorationCacheEntry
+{
+    public constructor()
+    {
+    }
+}
+const documentDecorationCache = new Map<vscode.TextDocument, DocumentDecorationCacheEntry>();
+const editorDecorationCache = new Map<vscode.TextEditor, EditorDecorationCacheEntry>();
 export const parseBrackets = (document: vscode.TextDocument) => profile
 (
     "parseBrackets",
@@ -64,10 +88,7 @@ export const getBracketDecorationSource = (textEditor: vscode.TextEditor) => pro
     "getBracketDecorationSource",
     () =>
     {
-        const result:{
-            range: vscode.Range,
-            bracketHeader: string,
-        }[] = [];
+        const result: BracketDecorationSource[] = [];
         const scanner = (context: BracketContext) =>
         {
             if (context.entry.start.line < context.entry.end.line)
@@ -77,7 +98,11 @@ export const getBracketDecorationSource = (textEditor: vscode.TextEditor) => pro
                 {
                     result.push
                     ({
-                        range: new vscode.Range(new vscode.Position(context.entry.end.line, context.entry.end.character -1), context.entry.end),
+                        range: new vscode.Range
+                        (
+                            new vscode.Position(context.entry.end.line, context.entry.end.character -1),
+                            context.entry.end
+                        ),
                         bracketHeader,
                     });
                 }
@@ -91,7 +116,7 @@ export const getBracketDecorationSource = (textEditor: vscode.TextEditor) => pro
                         nextEntry:array[index +1],
                     })
                 );
-                    }
+            }
         };
         parseBrackets(textEditor.document).map
         (
@@ -156,28 +181,6 @@ export const onDidChangeConfiguration = () =>
 {
     Config.root.entries.forEach(i => i.clear());
 };
-class DocumentDecorationCacheEntry
-{
-    brackets: BracketEntry[];
-    public constructor(document: vscode.TextDocument)
-    {
-        this.brackets = parseBrackets(document);
-    }
-}
-class EditorDecorationCacheEntry
-{
-    selection: vscode.Selection;
-    public constructor
-    (
-        textEditor: vscode.TextEditor,
-        currentDocumentDecorationCache: DocumentDecorationCacheEntry,
-        previousEditorDecorationCache? :EditorDecorationCacheEntry
-    )
-    {
-    }
-}
-const documentDecorationCache = new Map<vscode.TextDocument, DocumentDecorationCacheEntry>();
-const editorDecorationCache = new Map<vscode.TextEditor, EditorDecorationCacheEntry>();
 const valueThen = <ValueT, ResultT>(value: ValueT | undefined, f: (value: ValueT) => ResultT) =>
 {
     if (value)
