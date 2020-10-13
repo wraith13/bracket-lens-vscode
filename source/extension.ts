@@ -7,8 +7,9 @@ const locale = vscel.locale.make(localeEn, { "ja": localeJa });
 const profile = vscel.profiler.profile;
 module Config
 {
+    const modeObject = Object.freeze({ "none": "none", "smart": "smart", "full": "full", });
     export const root = vscel.config.makeRoot(packageJson);
-    export const enabled = root.makeEntry<boolean>("bracketLens.enabled");
+    export const mode = root.makeMapEntry("bracketLens.mode", modeObject);
     export const color = root.makeEntry<string>("bracketLens.color");
     export const prefix = root.makeEntry<string>("bracketLens.prefix");
 }
@@ -113,29 +114,33 @@ export const updateDecoration = (textEditor: vscode.TextEditor) => profile
     "updateDecoration",
     () =>
     {
-        const color = Config.color.get(textEditor.document.languageId);
-        const prefix = Config.prefix.get(textEditor.document.languageId);
         const bracketHeaderInformationDecoration = vscode.window.createTextEditorDecorationType
         ({
             isWholeLine: true,
             //color,
         });
-        const data = getBracketDecorationSource(textEditor);
-        const options: vscode.DecorationOptions[] = data.map
-        (
-            i =>
-            ({
-                range: i.range,
-                renderOptions:
-                {
-                    after:
+        const options: vscode.DecorationOptions[] = [];
+        if ("none" !== Config.mode.get(textEditor.document.languageId))
+        {
+            const color = Config.color.get(textEditor.document.languageId);
+            const prefix = Config.prefix.get(textEditor.document.languageId);
+            const data = getBracketDecorationSource(textEditor);
+            data.forEach
+            (
+                i => options.push
+                ({
+                    range: i.range,
+                    renderOptions:
                     {
-                        contentText: `${prefix}${i.bracketHeader}`,
-                        color,
+                        after:
+                        {
+                            contentText: `${prefix}${i.bracketHeader}`,
+                            color,
+                        }
                     }
-                }
-            })
-        );
+                })
+            );
+        }
         profile
         (
             "textEditor.setDecorations",

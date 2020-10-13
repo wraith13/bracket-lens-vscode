@@ -33,10 +33,15 @@
             {
                 "title": "Bracket Lens",
                 "properties": {
-                    "bracketLens.enabled": {
-                        "type": "boolean",
-                        "default": true,
-                        "description": "%bracketLens.enabled.description%",
+                    "bracketLens.mode": {
+                        "type": "string",
+                        "default": "smart",
+                        "enum": [
+                            "none",
+                            "smart",
+                            "full"
+                        ],
+                        "description": "%bracketLens.mode.description%",
                         "scope": "language-overridable"
                     },
                     "bracketLens.color": {
