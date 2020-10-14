@@ -67,6 +67,15 @@ const parseBrackets = (document: vscode.TextDocument) => profile
         return result;
     }
 );
+const nextCharacterPosition = (position: vscode.Position | undefined) => position ?
+    new vscode.Position
+    (
+        position.line,
+        position.character +1
+    ):
+    undefined;
+const maxPosition = (positions: vscode.Position[]) =>
+    positions.reduce((a, b) => a.isAfter(b) ? a: b, new vscode.Position(0, 0));
 const getBracketHeader =
 (
     document: vscode.TextDocument,
@@ -76,11 +85,23 @@ const getBracketHeader =
     "getBracketHeader",
     (): string =>
     {
-        const lineHead = new vscode.Position(context.entry.start.line, 0);
+        const topLimit =
+            context.previousEntry?.end ??
+            nextCharacterPosition(context.parentEntry?.start) ??
+            new vscode.Position(0, 0);
+        const lineHead = maxPosition
+        ([
+            topLimit,
+            new vscode.Position(context.entry.start.line, 0),
+        ]);
         let result = document.getText(new vscode.Range(lineHead, context.entry.start)).trim();
-        if (result.length <= 0 && 0 < context.entry.start.line)
+        if (result.length <= 0 && topLimit.line < context.entry.start.line)
         {
-            const previousLineHead = new vscode.Position(context.entry.start.line -1, 0);
+            const previousLineHead = maxPosition
+            ([
+                topLimit,
+                new vscode.Position(context.entry.start.line -1, 0),
+            ]);
             result = document.getText(new vscode.Range(previousLineHead, lineHead)).trim();
         }
         return result;
