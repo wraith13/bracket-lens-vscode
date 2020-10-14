@@ -44,17 +44,20 @@ class DocumentDecorationCacheEntry
     public constructor(document: vscode.TextDocument)
     {
         this.brackets = parseBrackets(document);
+        this.decorationSource = getBracketDecorationSource(document, this.brackets);
     }
 }
-class EditorDecorationCacheEntry
-{
-    public constructor()
-    {
-    }
-}
+// class EditorDecorationCacheEntry
+// {
+//     public constructor()
+//     {
+//     }
+// }
 const documentDecorationCache = new Map<vscode.TextDocument, DocumentDecorationCacheEntry>();
-const editorDecorationCache = new Map<vscode.TextEditor, EditorDecorationCacheEntry>();
-export const parseBrackets = (document: vscode.TextDocument) => profile
+// const editorDecorationCache = new Map<vscode.TextEditor, EditorDecorationCacheEntry>();
+const makeSuredocumentDecorationCache = (document: vscode.TextDocument) =>
+    documentDecorationCache.get(document) ?? new DocumentDecorationCacheEntry(document);
+const parseBrackets = (document: vscode.TextDocument) => profile
 (
     "parseBrackets",
     (): BracketEntry[] =>
@@ -64,7 +67,7 @@ export const parseBrackets = (document: vscode.TextDocument) => profile
         return result;
     }
 );
-export const getBracketHeader =
+const getBracketHeader =
 (
     document: vscode.TextDocument,
     context: BracketContext
@@ -83,7 +86,7 @@ export const getBracketHeader =
         return result;
     }
 );
-export const getBracketDecorationSource = (textEditor: vscode.TextEditor) => profile
+export const getBracketDecorationSource = (document: vscode.TextDocument, brackets: BracketEntry[]) => profile
 (
     "getBracketDecorationSource",
     () =>
@@ -93,7 +96,7 @@ export const getBracketDecorationSource = (textEditor: vscode.TextEditor) => pro
         {
             if (context.entry.start.line < context.entry.end.line)
             {
-                const bracketHeader = getBracketHeader(textEditor.document, context);
+                const bracketHeader = getBracketHeader(document, context);
                 if (0 < bracketHeader.length)
                 {
                     result.push
@@ -118,7 +121,7 @@ export const getBracketDecorationSource = (textEditor: vscode.TextEditor) => pro
                 );
             }
         };
-        parseBrackets(textEditor.document).map
+        brackets.map
         (
             (entry, index, array) => scanner
             ({
@@ -149,8 +152,8 @@ export const updateDecoration = (textEditor: vscode.TextEditor) => profile
         {
             const color = Config.color.get(textEditor.document.languageId);
             const prefix = Config.prefix.get(textEditor.document.languageId);
-            const data = getBracketDecorationSource(textEditor);
-            data.forEach
+            const documentDecorationCache = makeSuredocumentDecorationCache(textEditor.document);
+            documentDecorationCache.decorationSource.forEach
             (
                 i => options.push
                 ({
@@ -195,23 +198,23 @@ export const clearDecorationCache = (document?: vscode.TextDocument): void =>
     if (document)
     {
         documentDecorationCache.delete(document);
-        for(const textEditor of editorDecorationCache.keys())
-        {
-            if (document === textEditor.document)
-            {
-                editorDecorationCache.delete(textEditor);
-            }
-        }
+        // for(const textEditor of editorDecorationCache.keys())
+        // {
+        //     if (document === textEditor.document)
+        //     {
+        //         editorDecorationCache.delete(textEditor);
+        //     }
+        // }
     }
     else
     {
-        for(const textEditor of editorDecorationCache.keys())
-        {
-            if (vscode.window.visibleTextEditors.indexOf(textEditor) < 0)
-            {
-                editorDecorationCache.delete(textEditor);
-            }
-        }
+        // for(const textEditor of editorDecorationCache.keys())
+        // {
+        //     if (vscode.window.visibleTextEditors.indexOf(textEditor) < 0)
+        //     {
+        //         editorDecorationCache.delete(textEditor);
+        //     }
+        // }
     }
 };
 const getDocumentTextLength = (document: vscode.TextDocument) => document.offsetAt
