@@ -67,15 +67,18 @@ const parseBrackets = (document: vscode.TextDocument) => profile
         return result;
     }
 );
-const nextCharacterPosition = (position: vscode.Position | undefined) => position ?
-    new vscode.Position
-    (
-        position.line,
-        position.character +1
-    ):
-    undefined;
-const maxPosition = (positions: vscode.Position[]) =>
-    positions.reduce((a, b) => a.isAfter(b) ? a: b, new vscode.Position(0, 0));
+module position
+{
+    export const nextCharacter = (position: vscode.Position | undefined, increment: number = 1) => position ?
+        new vscode.Position
+        (
+            position.line,
+            position.character +increment
+        ):
+        undefined;
+    export const max = (positions: vscode.Position[]) =>
+        positions.reduce((a, b) => a.isAfter(b) ? a: b, new vscode.Position(0, 0));
+}
 const getBracketHeader =
 (
     document: vscode.TextDocument,
@@ -87,9 +90,9 @@ const getBracketHeader =
     {
         const topLimit =
             context.previousEntry?.end ??
-            nextCharacterPosition(context.parentEntry?.start) ??
+            position.nextCharacter(context.parentEntry?.start) ??
             new vscode.Position(0, 0);
-        const lineHead = maxPosition
+        const lineHead = position.max
         ([
             topLimit,
             new vscode.Position(context.entry.start.line, 0),
@@ -97,7 +100,7 @@ const getBracketHeader =
         let result = document.getText(new vscode.Range(lineHead, context.entry.start)).trim();
         if (result.length <= 0 && topLimit.line < context.entry.start.line)
         {
-            const previousLineHead = maxPosition
+            const previousLineHead = position.max
             ([
                 topLimit,
                 new vscode.Position(context.entry.start.line -1, 0),
@@ -115,7 +118,15 @@ export const getBracketDecorationSource = (document: vscode.TextDocument, bracke
         const result: BracketDecorationSource[] = [];
         const scanner = (context: BracketContext) =>
         {
-            if (context.entry.start.line < context.entry.end.line)
+            if
+            (
+                // １行に収まる場合はスキップ
+                context.entry.start.line < context.entry.end.line &&
+                // 後続ブロックが閉じと同じ行で始まる場合はスキップ
+                context.entry.end.line < (context.nextEntry?.start?.line ?? document.lineCount +1) &&
+                // 親の閉じと同じ行になる場合は親を優先
+                context.entry.end.line < (context.parentEntry?.end?.line ?? document.lineCount +1)
+            )
             {
                 const bracketHeader = getBracketHeader(document, context);
                 if (0 < bracketHeader.length)
