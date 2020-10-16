@@ -57,12 +57,80 @@ const documentDecorationCache = new Map<vscode.TextDocument, DocumentDecorationC
 // const editorDecorationCache = new Map<vscode.TextEditor, EditorDecorationCacheEntry>();
 const makeSuredocumentDecorationCache = (document: vscode.TextDocument) =>
     documentDecorationCache.get(document) ?? new DocumentDecorationCacheEntry(document);
+export const regExpExecToArray = (regexp: RegExp, text: string) => profile
+(
+    `regExpExecToArray(/${regexp.source}/${regexp.flags})`,
+    () =>
+    {
+        const result: RegExpExecArray[] = [];
+        while(true)
+        {
+            const match = regexp.exec(text);
+            if (null === match)
+            {
+                break;
+            }
+            result.push(match);
+        }
+        return result;
+    }
+);
+const makeRegExpPart = (text: string) => text;
 const parseBrackets = (document: vscode.TextDocument) => profile
 (
     "parseBrackets",
     (): BracketEntry[] =>
     {
         const result:BracketEntry[] = [];
+        const languageConfiguration =
+        {
+            "comments": {
+                "blockComment": [
+                    "/*",
+                    "*/"
+                ],
+                "lineComment": "//"
+            },
+            "brackets": [
+                [
+                    "(",
+                    ")"
+                ],
+                [
+                    "[",
+                    "]"
+                ],
+                [
+                    "{",
+                    "}"
+                ]
+            ],
+        };
+        const text = document.getText();
+        regExpExecToArray
+        (
+            new RegExp
+            (
+                (<string[]>[])
+                    .concat(languageConfiguration.comments.blockComment)
+                    .concat(languageConfiguration.comments.lineComment)
+                    .concat(languageConfiguration.brackets.reduce((a, b) => a.concat(b), []))
+                    .map(i => `(${makeRegExpPart(i)})`)
+                    .join(""),
+                "gm"
+            ),
+            text
+        )
+        .map
+        (
+            match =>
+            ({
+                type: "type",
+                index: match.index,
+                token: match[0],
+            })
+        );
+        
 
         return result;
     }
