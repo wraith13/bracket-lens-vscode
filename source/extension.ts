@@ -75,7 +75,7 @@ export const regExpExecToArray = (regexp: RegExp, text: string) => profile
         return result;
     }
 );
-const makeRegExpPart = (text: string) => text;
+const makeRegExpPart = (text: string) => text.replace(/([\\\/\*\[\]\(\)\{\}\|])/gm, "\\$1");
 const parseBrackets = (document: vscode.TextDocument) => profile
 (
     "parseBrackets",
@@ -105,9 +105,19 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                     "}"
                 ]
             ],
+            "strings": [
+                "\"",
+                "`",
+                "'",
+            ],
+            "stringEscapes": [
+                "\\\"",
+                "\\\`",
+                "\\\'",
+            ]
         };
         const text = document.getText();
-        regExpExecToArray
+        const tokens = regExpExecToArray
         (
             new RegExp
             (
@@ -115,8 +125,11 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                     .concat(languageConfiguration.comments.blockComment)
                     .concat(languageConfiguration.comments.lineComment)
                     .concat(languageConfiguration.brackets.reduce((a, b) => a.concat(b), []))
+                    .concat(languageConfiguration.stringEscapes)
+                    .concat(languageConfiguration.strings)
+                    .concat("\n")
                     .map(i => `(${makeRegExpPart(i)})`)
-                    .join(""),
+                    .join(""), //.join("|"),
                 "gm"
             ),
             text
@@ -125,13 +138,110 @@ const parseBrackets = (document: vscode.TextDocument) => profile
         (
             match =>
             ({
-                type: "type",
                 index: match.index,
                 token: match[0],
             })
         );
-        
-
+        //type CodeState = "neutral" | "block-comment" | "line-comment" | "string";
+        //let state: CodeState = "neutral";
+        let scopeStack: { start: typeof tokens[0], items: BracketEntry[] }[] = [];
+        let i = 0;
+console.log(`tokens.length: ${tokens.length}`);
+//console.log(`tokens: ${JSON.stringify(tokens)}`);
+        while(i < tokens.length)
+        {
+            //const t = tokens[i];
+            if (languageConfiguration.comments.blockComment[0] === tokens[i].token)
+            {
+                while(++i < tokens.length)
+                {
+                    if (languageConfiguration.comments.blockComment[1] === tokens[i].token)
+                    {
+                        ++i;
+                        break;
+                    }
+                }
+            }
+            else
+            if (languageConfiguration.comments.lineComment === tokens[i].token)
+            {
+                while(++i < tokens.length)
+                {
+                    if ("\n" === tokens[i].token)
+                    {
+                        ++i;
+                        break;
+                    }
+                }
+            }
+            else
+            if (0 <= languageConfiguration.brackets.map(i => i[0]).indexOf(tokens[i].token))
+            {
+                scopeStack.push
+                ({
+                    start: tokens[i],
+                    items: [],
+                });
+                ++i;
+            }
+            else
+            if (0 <= languageConfiguration.brackets.map(i => i[1]).indexOf(tokens[i].token))
+            {
+                const scope = scopeStack.pop();
+                if (scope)
+                {
+                    const current =
+                    {
+                        start: document.positionAt(scope.start.index),
+                        end: document.positionAt(tokens[i].index),
+                        items: scope.items,
+                    };
+                    result.push(current);
+                    const parent = scopeStack[scopeStack.length -1];
+                    if (parent)
+                    {
+                        parent.items.push(current);
+                    }
+                }
+                ++i;
+            }
+            else
+            if (0 <= languageConfiguration.strings.indexOf(tokens[i].token))
+            {
+                const start = tokens[i].token;
+                while(++i < tokens.length)
+                {
+                    if ("\n" === tokens[i].token || start === tokens[i].token)
+                    {
+                        ++i;
+                        break;
+                    }
+                }
+            }
+        };
+        while(0 < scopeStack.length)
+        {
+            const scope = scopeStack.pop();
+            if (scope)
+            {
+                const current =
+                {
+                    start: document.positionAt(scope.start.index),
+                    end: document.positionAt(text.length),
+                    items: scope.items,
+                };
+                result.push(current);
+                const parent = scopeStack[scopeStack.length -1];
+                if (parent)
+                {
+                    parent.items.push(current);
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
         return result;
     }
 );
@@ -183,9 +293,11 @@ export const getBracketDecorationSource = (document: vscode.TextDocument, bracke
     "getBracketDecorationSource",
     () =>
     {
+console.log(`brackets.length: ${brackets.length}`);
         const result: BracketDecorationSource[] = [];
         const scanner = (context: BracketContext) =>
         {
+console.log(`context.entry: ${JSON.stringify(context.entry)}`);
             if
             (
                 // １行に収まる場合はスキップ
@@ -199,6 +311,7 @@ export const getBracketDecorationSource = (document: vscode.TextDocument, bracke
                 const bracketHeader = getBracketHeader(document, context);
                 if (0 < bracketHeader.length)
                 {
+                    console.log(`bracketHeader: ${bracketHeader}`);
                     result.push
                     ({
                         range: new vscode.Range
