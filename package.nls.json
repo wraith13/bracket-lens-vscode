@@ -1,8 +1,9 @@
 {
     "bracketLens.reportProfile.title": "Report Profile",
-    "bracketLens.mode.description": "TBD",
+    "bracketLens.enabled.description": "TBD",
     "bracketLens.color.description": "TBD",
     "bracketLens.prefix.description": "TBD",
+    "bracketLens.unmatchBracketsPrefix.description": "TBD",
     "🚫 You have already started the profile.": "🚫 You have already started the profile.",
     "⏱ Start Profile!": "⏱ Start Profile!",
     "🏁 Stop Profile!": "🏁 Stop Profile!",

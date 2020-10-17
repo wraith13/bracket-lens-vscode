@@ -7,11 +7,11 @@ const locale = vscel.locale.make(localeEn, { "ja": localeJa });
 const profile = vscel.profiler.profile;
 module Config
 {
-    const modeObject = Object.freeze({ "none": "none", "smart": "smart", "full": "full", });
     export const root = vscel.config.makeRoot(packageJson);
-    export const mode = root.makeMapEntry("bracketLens.mode", modeObject);
+    export const enabled = root.makeEntry<boolean>("bracketLens.enabled");
     export const color = root.makeEntry<string>("bracketLens.color");
     export const prefix = root.makeEntry<string>("bracketLens.prefix");
+    export const unmatchBracketsPrefix = root.makeEntry<string>("bracketLens.unmatchBracketsPrefix");
 }
 let profilerOutputChannel: vscode.OutputChannel | undefined = undefined;
 const getProfilerOutputChannel = () => profilerOutputChannel ?
@@ -26,6 +26,7 @@ interface BracketEntry
 {
     start: TokenEntry;
     end: TokenEntry;
+    isUnmatchBrackets: boolean;
     items: BracketEntry[];
 }
 interface BracketContext
@@ -103,7 +104,10 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                     "/*",
                     "*/"
                 ],
-                "lineComment": "//"
+                "lineComment":
+                [
+                    "//"
+                ]
             },
             "brackets": [
                 [
@@ -153,18 +157,17 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                 token: match[0],
             })
         );
-        //type CodeState = "neutral" | "block-comment" | "line-comment" | "string";
-        //let state: CodeState = "neutral";
-        let scopeStack: { start: TokenEntry, items: BracketEntry[] }[] = [];
-        let i = 0;
         profile
         (
             "parseBrackets.scan",
             () =>
             {
+                let scopeStack: { start: TokenEntry, items: BracketEntry[] }[] = [];
+                let i = 0;
+                const openingBrackets = languageConfiguration.brackets.map(i => i[0]);
+                const closingBrackets = languageConfiguration.brackets.map(i => i[1]);
                 while(i < tokens.length)
                 {
-                    //const t = tokens[i];
                     if (languageConfiguration.comments.blockComment[0] === tokens[i].token)
                     {
                         profile
@@ -184,7 +187,7 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                         );
                     }
                     else
-                    if (languageConfiguration.comments.lineComment === tokens[i].token)
+                    if (0 <= languageConfiguration.comments.lineComment.indexOf(tokens[i].token))
                     {
                         profile
                         (
@@ -203,7 +206,7 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                         );
                     }
                     else
-                    if (0 <= languageConfiguration.brackets.map(j => j[0]).indexOf(tokens[i].token))
+                    if (0 <= openingBrackets.indexOf(tokens[i].token))
                     {
                         profile
                         (
@@ -224,7 +227,7 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                         );
                     }
                     else
-                    if (0 <= languageConfiguration.brackets.map(j => j[1]).indexOf(tokens[i].token))
+                    if (0 <= closingBrackets.indexOf(tokens[i].token))
                     {
                         profile
                         (
@@ -242,6 +245,7 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                                             position: document.positionAt(tokens[i].index +tokens[i].token.length),
                                             token: tokens[i].token,
                                         },
+                                        isUnmatchBrackets: openingBrackets.indexOf(scope.start.token) !== closingBrackets.indexOf(tokens[i].token),
                                         items: scope.items,
                                     };
                                     if ( ! isInlineScope(current))
@@ -309,6 +313,7 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                                         position: document.positionAt(text.length),
                                         token:"",
                                     },
+                                    isUnmatchBrackets: true,
                                     items: scope.items,
                                 };
                                 if ( ! isInlineScope(current))
@@ -455,31 +460,35 @@ export const getBracketDecorationSource = (document: vscode.TextDocument, bracke
     "getBracketDecorationSource",
     () =>
     {
+        const prefix = Config.prefix.get(document.languageId);
+        const unmatchBracketsPrefix = Config.unmatchBracketsPrefix.get(document.languageId);
         const result: BracketDecorationSource[] = [];
         const scanner = (context: BracketContext) =>
         {
-            if
-            (
-                // １行に収まる場合はスキップ
-                context.entry.start.position.line < context.entry.end.position.line &&
-                // 後続ブロックが閉じと同じ行で始まる場合はスキップ
-                context.entry.end.position.line < (context.nextEntry?.start.position.line ?? document.lineCount +1) &&
-                // 親の閉じと同じ行になる場合は親を優先
-                context.entry.end.position.line < (context.parentEntry?.end.position.line ?? document.lineCount +1)
-            )
+            // １行に収まる場合はスキップ
+            if (context.entry.start.position.line < context.entry.end.position.line)
             {
-                const bracketHeader = getBracketHeader(document, context);
-                if (0 < bracketHeader.length)
+                if
+                (
+                    // 後続ブロックが閉じと同じ行で始まる場合はスキップ
+                    context.entry.end.position.line < (context.nextEntry?.start.position.line ?? document.lineCount +1) &&
+                    // 親の閉じと同じ行になる場合は親を優先
+                    context.entry.end.position.line < (context.parentEntry?.end.position.line ?? document.lineCount +1)
+                )
                 {
-                    result.push
-                    ({
-                        range: new vscode.Range
-                        (
-                            position.nextCharacter(context.entry.end.position, -context.entry.end.token.length),
-                            context.entry.end.position
-                        ),
-                        bracketHeader,
-                    });
+                    const bracketHeader = getBracketHeader(document, context);
+                    if (0 < bracketHeader.length)
+                    {
+                        result.push
+                        ({
+                            range: new vscode.Range
+                            (
+                                position.nextCharacter(context.entry.end.position, -context.entry.end.token.length),
+                                context.entry.end.position
+                            ),
+                            bracketHeader: `${context.entry.isUnmatchBrackets ? unmatchBracketsPrefix: prefix}${bracketHeader}`,
+                        });
+                    }
                 }
                 context.entry.items.map
                 (
@@ -511,7 +520,7 @@ export const updateDecoration = (textEditor: vscode.TextEditor) => profile
     "updateDecoration",
     () =>
     {
-        if ("none" !== Config.mode.get(textEditor.document.languageId))
+        if (Config.enabled.get(textEditor.document.languageId))
         {
             if ( ! editorDecorationCache.get(textEditor))
             {
@@ -522,7 +531,6 @@ export const updateDecoration = (textEditor: vscode.TextEditor) => profile
                 });
                 const options: vscode.DecorationOptions[] = [];
                 const color = Config.color.get(textEditor.document.languageId);
-                const prefix = Config.prefix.get(textEditor.document.languageId);
                 makeSureDocumentDecorationCache(textEditor.document).decorationSource.forEach
                 (
                     i => options.push
@@ -532,7 +540,7 @@ export const updateDecoration = (textEditor: vscode.TextEditor) => profile
                         {
                             after:
                             {
-                                contentText: `${prefix}${i.bracketHeader}`,
+                                contentText: i.bracketHeader,
                                 color,
                             }
                         }
@@ -553,12 +561,14 @@ export const updateDecoration = (textEditor: vscode.TextEditor) => profile
         else
         {
             editorDecorationCache.get(textEditor)?.dispose();
+            editorDecorationCache.delete(textEditor);
         }
     }
 );
 export const onDidChangeConfiguration = () =>
 {
     Config.root.entries.forEach(i => i.clear());
+    clearDecorationCache();
     updateAllDecoration();
 };
 const valueThen = <ValueT, ResultT>(value: ValueT | undefined, f: (value: ValueT) => ResultT) =>
@@ -617,7 +627,7 @@ export const delayUpdateDecoration = (textEditor: vscode.TextEditor): void =>
                 100 + //basicDelay.get(lang) +
                 (
                     undefined === documentDecorationCache.get(textEditor.document) ?
-                        500: // additionalDelay.get(lang):
+                        100: // additionalDelay.get(lang):
                         0
                 )
             );
@@ -636,7 +646,9 @@ export const delayUpdateDecoration = (textEditor: vscode.TextEditor): void =>
     );
 };
 export const updateAllDecoration = () =>
-    vscode.window.visibleTextEditors.forEach(i => delayUpdateDecoration(i));
+    vscode.window.visibleTextEditors
+        .filter(i => i.viewColumn)
+        .forEach(i => delayUpdateDecoration(i));
 export const onDidChangeWorkspaceFolders = onDidChangeConfiguration;
 export const onDidChangeActiveTextEditor = (): void =>
 {
@@ -648,6 +660,7 @@ export const onDidChangeTextDocument = (document: vscode.TextDocument): void =>
 {
     clearDecorationCache(document);
     vscode.window.visibleTextEditors
+        .filter(i => i.viewColumn)
         .filter(i => i.document === document)
         .forEach(i => delayUpdateDecoration(i));
 };
@@ -658,9 +671,6 @@ export const activate = async (context: vscode.ExtensionContext) =>
     vscel.profiler.start();
     context.subscriptions.push
     (
-        vscode.commands.registerCommand('bracketLens.helloWorld', () => {
-            vscode.window.showInformationMessage('Hello World from Bracket Lens!');
-        }),
         vscode.commands.registerCommand
         (
             `bracketLens.reportProfile`, () =>
@@ -690,10 +700,7 @@ export const activate = async (context: vscode.ExtensionContext) =>
         (
             async (event) =>
             {
-                if
-                (
-                    event.affectsConfiguration("bracketLens")
-                )
+                if (event.affectsConfiguration("bracketLens"))
                 {
                     onDidChangeConfiguration();
                 }

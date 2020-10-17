@@ -19,11 +19,6 @@
     "contributes": {
         "commands": [
             {
-                "command": "bracketLens.helloWorld",
-                "title": "Hello World",
-                "category": "Bracket Lens"
-            },
-            {
                 "command": "bracketLens.reportProfile",
                 "title": "%bracketLens.reportProfile.title%",
                 "category": "Bracket Lens"
@@ -33,15 +28,10 @@
             {
                 "title": "Bracket Lens",
                 "properties": {
-                    "bracketLens.mode": {
-                        "type": "string",
-                        "default": "smart",
-                        "enum": [
-                            "none",
-                            "smart",
-                            "full"
-                        ],
-                        "description": "%bracketLens.mode.description%",
+                    "bracketLens.enabled": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "%bracketLens.enabled.description%",
                         "scope": "language-overridable"
                     },
                     "bracketLens.color": {
@@ -55,6 +45,12 @@
                         "type": "string",
                         "default": " <- ",
                         "description": "%bracketLens.prefix.description%",
+                        "scope": "language-overridable"
+                    },
+                    "bracketLens.unmatchBracketsPrefix": {
+                        "type": "string",
+                        "default": " 🚫 <- ",
+                        "description": "%bracketLens.unmatchBracketsPrefix.description%",
                         "scope": "language-overridable"
                     }
                 }
