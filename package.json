@@ -34,6 +34,12 @@
                         "description": "%bracketLens.enabled.description%",
                         "scope": "language-overridable"
                     },
+                    "bracketLens.debug": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "%bracketLens.debug.description%",
+                        "scope": "window"
+                    },
                     "bracketLens.color": {
                         "type": "string",
                         "default": "#888888CC",
@@ -55,7 +61,14 @@
                     }
                 }
             }
-        ]
+        ],
+        "configurationDefaults":
+        {
+            "[ignore]":
+            {
+                "bracketLens.enabled": false
+            }
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

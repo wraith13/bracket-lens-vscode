@@ -1,6 +1,7 @@
 {
     "bracketLens.reportProfile.title": "Report Profile",
     "bracketLens.enabled.description": "TBD",
+    "bracketLens.debug.description": "TBD",
     "bracketLens.color.description": "TBD",
     "bracketLens.prefix.description": "TBD",
     "bracketLens.unmatchBracketsPrefix.description": "TBD",
