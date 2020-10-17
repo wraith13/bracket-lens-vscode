@@ -35,8 +35,6 @@ interface BracketDecorationSource
     range: vscode.Range;
     bracketHeader: string;
 }
-
-
 class DocumentDecorationCacheEntry
 {
     brackets: BracketEntry[];
@@ -75,7 +73,7 @@ export const regExpExecToArray = (regexp: RegExp, text: string) => profile
         return result;
     }
 );
-const makeRegExpPart = (text: string) => text.replace(/([\\\/\*\[\]\(\)\{\}\|])/gm, "\\$1");
+const makeRegExpPart = (text: string) => text.replace(/([\\\/\*\[\]\(\)\{\}\|])/gmu, "\\$1");
 const parseBrackets = (document: vscode.TextDocument) => profile
 (
     "parseBrackets",
@@ -107,8 +105,8 @@ const parseBrackets = (document: vscode.TextDocument) => profile
             ],
             "strings": [
                 "\"",
-                "`",
-                "'",
+                "\`",
+                "\'",
             ],
             "stringEscapes": [
                 "\\\"",
@@ -117,21 +115,22 @@ const parseBrackets = (document: vscode.TextDocument) => profile
             ]
         };
         const text = document.getText();
+        console.log(`xxxxxx`);
+        const pattern = (<string[]>[])
+            .concat(languageConfiguration.comments.blockComment)
+            .concat(languageConfiguration.comments.lineComment)
+            .concat(languageConfiguration.brackets.reduce((a, b) => a.concat(b), []))
+            .concat(languageConfiguration.stringEscapes)
+            .concat(languageConfiguration.strings)
+            .map(i => makeRegExpPart(i))
+            //.concat("\\n")
+            .map(i => `${i}`)
+            .join("|") +"|\\\\n";
+        console.log(`pattern.raw: ${pattern}`);
+        console.log(`pattern.string: ${JSON.stringify(pattern)}`);
         const tokens = regExpExecToArray
         (
-            new RegExp
-            (
-                (<string[]>[])
-                    .concat(languageConfiguration.comments.blockComment)
-                    .concat(languageConfiguration.comments.lineComment)
-                    .concat(languageConfiguration.brackets.reduce((a, b) => a.concat(b), []))
-                    .concat(languageConfiguration.stringEscapes)
-                    .concat(languageConfiguration.strings)
-                    .concat("\n")
-                    .map(i => `(${makeRegExpPart(i)})`)
-                    .join(""), //.join("|"),
-                "gm"
-            ),
+            new RegExp(pattern, "gu"),
             text
         )
         .map
@@ -175,7 +174,7 @@ console.log(`tokens.length: ${tokens.length}`);
                 }
             }
             else
-            if (0 <= languageConfiguration.brackets.map(i => i[0]).indexOf(tokens[i].token))
+            if (0 <= languageConfiguration.brackets.map(j => j[0]).indexOf(tokens[i].token))
             {
                 scopeStack.push
                 ({
@@ -185,7 +184,7 @@ console.log(`tokens.length: ${tokens.length}`);
                 ++i;
             }
             else
-            if (0 <= languageConfiguration.brackets.map(i => i[1]).indexOf(tokens[i].token))
+            if (0 <= languageConfiguration.brackets.map(j => j[1]).indexOf(tokens[i].token))
             {
                 const scope = scopeStack.pop();
                 if (scope)
@@ -193,7 +192,7 @@ console.log(`tokens.length: ${tokens.length}`);
                     const current =
                     {
                         start: document.positionAt(scope.start.index),
-                        end: document.positionAt(tokens[i].index),
+                        end: document.positionAt(tokens[i].index +tokens[i].token.length),
                         items: scope.items,
                     };
                     result.push(current);
@@ -316,7 +315,7 @@ console.log(`context.entry: ${JSON.stringify(context.entry)}`);
                     ({
                         range: new vscode.Range
                         (
-                            new vscode.Position(context.entry.end.line, context.entry.end.character -1),
+                            new vscode.Position(context.entry.end.line, context.entry.end.character),
                             context.entry.end
                         ),
                         bracketHeader,
