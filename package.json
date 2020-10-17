@@ -46,7 +46,7 @@
                     },
                     "bracketLens.color": {
                         "type": "string",
-                        "default": "comments",
+                        "default": "#888888",
                         "oneOf": [
                             {
                                 "enum": [
@@ -70,7 +70,7 @@
                     },
                     "bracketLens.prefix": {
                         "type": "string",
-                        "default": "👉 ",
+                        "default": " <- ",
                         "description": "%bracketLens.prefix.description%",
                         "scope": "language-overridable"
                     }

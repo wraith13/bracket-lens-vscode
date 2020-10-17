@@ -17,10 +17,15 @@ let profilerOutputChannel: vscode.OutputChannel | undefined = undefined;
 const getProfilerOutputChannel = () => profilerOutputChannel ?
     profilerOutputChannel:
     (profilerOutputChannel = vscode.window.createOutputChannel("Bracket Lens Profiler"));
+interface TokenEntry
+{
+    position: vscode.Position;
+    token: string;
+}
 interface BracketEntry
 {
-    start: vscode.Position;
-    end: vscode.Position;
+    start: TokenEntry;
+    end: TokenEntry;
     items: BracketEntry[];
 }
 interface BracketContext
@@ -74,6 +79,7 @@ export const regExpExecToArray = (regexp: RegExp, text: string) => profile
     }
 );
 const makeRegExpPart = (text: string) => text.replace(/([\\\/\*\[\]\(\)\{\}\|])/gmu, "\\$1");
+const isInlineScope = (bracket: BracketEntry) => bracket.end.position.line <= bracket.start.position.line;
 const parseBrackets = (document: vscode.TextDocument) => profile
 (
     "parseBrackets",
@@ -115,19 +121,15 @@ const parseBrackets = (document: vscode.TextDocument) => profile
             ]
         };
         const text = document.getText();
-        console.log(`xxxxxx`);
         const pattern = (<string[]>[])
             .concat(languageConfiguration.comments.blockComment)
             .concat(languageConfiguration.comments.lineComment)
             .concat(languageConfiguration.brackets.reduce((a, b) => a.concat(b), []))
             .concat(languageConfiguration.stringEscapes)
             .concat(languageConfiguration.strings)
-            .map(i => makeRegExpPart(i))
-            //.concat("\\n")
-            .map(i => `${i}`)
-            .join("|") +"|\\\\n";
-        console.log(`pattern.raw: ${pattern}`);
-        console.log(`pattern.string: ${JSON.stringify(pattern)}`);
+            .concat("\\n")
+            .map(i => `${makeRegExpPart(i)}`)
+            .join("|");
         const tokens = regExpExecToArray
         (
             new RegExp(pattern, "gu"),
@@ -143,10 +145,8 @@ const parseBrackets = (document: vscode.TextDocument) => profile
         );
         //type CodeState = "neutral" | "block-comment" | "line-comment" | "string";
         //let state: CodeState = "neutral";
-        let scopeStack: { start: typeof tokens[0], items: BracketEntry[] }[] = [];
+        let scopeStack: { start: TokenEntry, items: BracketEntry[] }[] = [];
         let i = 0;
-console.log(`tokens.length: ${tokens.length}`);
-//console.log(`tokens: ${JSON.stringify(tokens)}`);
         while(i < tokens.length)
         {
             //const t = tokens[i];
@@ -178,7 +178,11 @@ console.log(`tokens.length: ${tokens.length}`);
             {
                 scopeStack.push
                 ({
-                    start: tokens[i],
+                    start:
+                    {
+                        position: document.positionAt(tokens[i].index),
+                        token: tokens[i].token,
+                    },
                     items: [],
                 });
                 ++i;
@@ -191,15 +195,25 @@ console.log(`tokens.length: ${tokens.length}`);
                 {
                     const current =
                     {
-                        start: document.positionAt(scope.start.index),
-                        end: document.positionAt(tokens[i].index +tokens[i].token.length),
+                        start: scope.start,
+                        end:
+                        {
+                            position: document.positionAt(tokens[i].index +tokens[i].token.length),
+                            token: tokens[i].token,
+                        },
                         items: scope.items,
                     };
-                    result.push(current);
-                    const parent = scopeStack[scopeStack.length -1];
-                    if (parent)
+                    if ( ! isInlineScope(current))
                     {
-                        parent.items.push(current);
+                        const parent = scopeStack[scopeStack.length -1];
+                        if (parent)
+                        {
+                            parent.items.push(current);
+                        }
+                        else
+                        {
+                            result.push(current);
+                        }
                     }
                 }
                 ++i;
@@ -217,6 +231,10 @@ console.log(`tokens.length: ${tokens.length}`);
                     }
                 }
             }
+            else
+            {
+                ++i;
+            }
         };
         while(0 < scopeStack.length)
         {
@@ -225,15 +243,25 @@ console.log(`tokens.length: ${tokens.length}`);
             {
                 const current =
                 {
-                    start: document.positionAt(scope.start.index),
-                    end: document.positionAt(text.length),
+                    start: scope.start,
+                    end:
+                    {
+                        position: document.positionAt(text.length),
+                        token:"",
+                    },
                     items: scope.items,
                 };
-                result.push(current);
-                const parent = scopeStack[scopeStack.length -1];
-                if (parent)
+                if ( ! isInlineScope(current))
                 {
-                    parent.items.push(current);
+                    const parent = scopeStack[scopeStack.length -1];
+                    if (parent)
+                    {
+                        parent.items.push(current);
+                    }
+                    else
+                    {
+                        result.push(current);
+                    }
                 }
             }
             else
@@ -246,15 +274,20 @@ console.log(`tokens.length: ${tokens.length}`);
 );
 module position
 {
-    export const nextCharacter = (position: vscode.Position | undefined, increment: number = 1) => position ?
-        new vscode.Position
+    export const nextLine = (position: vscode.Position, increment: number = 1) => new vscode.Position
+        (
+            position.line +increment,
+            0
+        );
+    export const nextCharacter = (position: vscode.Position, increment: number = 1) => new vscode.Position
         (
             position.line,
             position.character +increment
-        ):
-        undefined;
+        );
+    export const min = (positions: vscode.Position[]) =>
+        positions.reduce((a, b) => a.isBefore(b) ? a: b, positions[0]);
     export const max = (positions: vscode.Position[]) =>
-        positions.reduce((a, b) => a.isAfter(b) ? a: b, new vscode.Position(0, 0));
+        positions.reduce((a, b) => a.isAfter(b) ? a: b, positions[0]);
 }
 const getBracketHeader =
 (
@@ -265,26 +298,92 @@ const getBracketHeader =
     "getBracketHeader",
     (): string =>
     {
+        const regulateHeader = (text: string) => text.replace(/\s+/gu, " ").trim();
+        const isValidHeader = (text: string) => 0 < text
+            //.replace(/\W/gmu, "")
+            .replace(/,/gmu, "")
+            .trim().length;
         const topLimit =
-            context.previousEntry?.end ??
-            position.nextCharacter(context.parentEntry?.start) ??
-            new vscode.Position(0, 0);
+            context.previousEntry?.end.position ??
+            (
+                undefined !== context.parentEntry ?
+                    position.nextCharacter
+                    (
+                        context.parentEntry.start.position,
+                        context.parentEntry.start.token.length
+                    ):
+                    new vscode.Position(0, 0)
+            );
         const lineHead = position.max
         ([
             topLimit,
-            new vscode.Position(context.entry.start.line, 0),
+            position.nextLine(context.entry.start.position, 0),
         ]);
-        let result = document.getText(new vscode.Range(lineHead, context.entry.start)).trim();
-        if (result.length <= 0 && topLimit.line < context.entry.start.line)
+        const currnetLineHeader = regulateHeader(document.getText(new vscode.Range(lineHead, context.entry.start.position)));
+        if (isValidHeader(currnetLineHeader))
+        {
+            return currnetLineHeader;
+        }
+        if (topLimit.line < context.entry.start.position.line)
         {
             const previousLineHead = position.max
             ([
                 topLimit,
-                new vscode.Position(context.entry.start.line -1, 0),
+                position.nextLine(context.entry.start.position, -1),
             ]);
-            result = document.getText(new vscode.Range(previousLineHead, lineHead)).trim();
+            const previousLineHeader = regulateHeader(document.getText(new vscode.Range(previousLineHead, lineHead)));
+            if (isValidHeader(previousLineHeader))
+            {
+                return previousLineHeader;
+            }
         }
-        return result;
+        const currnetLineInnerHeader = regulateHeader
+        (
+            document.getText
+            (
+                new vscode.Range
+                (
+                    position.nextCharacter
+                    (
+                        context.entry.start.position,
+                        context.entry.start.token.length
+                    ),
+                    position.nextLine(context.entry.start.position, +1)
+                )
+            )
+        );
+        if (isValidHeader(currnetLineInnerHeader))
+        {
+            return currnetLineInnerHeader;
+        }
+        const innerHeader = regulateHeader
+        (
+            document.getText
+            (
+                new vscode.Range
+                (
+                    context.entry.start.position,
+                    position.min
+                    ([
+                        position.nextLine(context.entry.start.position, +16),
+                        context.entry.end.position,
+                    ])
+                )
+            )
+        );
+        if (isValidHeader(innerHeader))
+        {
+            const maxHeaderLength = 80;
+            if (innerHeader.length <= maxHeaderLength)
+            {
+                return innerHeader;
+            }
+            else
+            {
+                return innerHeader.substring(0, maxHeaderLength) +"...";
+            }
+        }
+        return "";
     }
 );
 export const getBracketDecorationSource = (document: vscode.TextDocument, brackets: BracketEntry[]) => profile
@@ -292,31 +391,28 @@ export const getBracketDecorationSource = (document: vscode.TextDocument, bracke
     "getBracketDecorationSource",
     () =>
     {
-console.log(`brackets.length: ${brackets.length}`);
         const result: BracketDecorationSource[] = [];
         const scanner = (context: BracketContext) =>
         {
-console.log(`context.entry: ${JSON.stringify(context.entry)}`);
             if
             (
                 // １行に収まる場合はスキップ
-                context.entry.start.line < context.entry.end.line &&
+                context.entry.start.position.line < context.entry.end.position.line &&
                 // 後続ブロックが閉じと同じ行で始まる場合はスキップ
-                context.entry.end.line < (context.nextEntry?.start?.line ?? document.lineCount +1) &&
+                context.entry.end.position.line < (context.nextEntry?.start.position.line ?? document.lineCount +1) &&
                 // 親の閉じと同じ行になる場合は親を優先
-                context.entry.end.line < (context.parentEntry?.end?.line ?? document.lineCount +1)
+                context.entry.end.position.line < (context.parentEntry?.end.position.line ?? document.lineCount +1)
             )
             {
                 const bracketHeader = getBracketHeader(document, context);
                 if (0 < bracketHeader.length)
                 {
-                    console.log(`bracketHeader: ${bracketHeader}`);
                     result.push
                     ({
                         range: new vscode.Range
                         (
-                            new vscode.Position(context.entry.end.line, context.entry.end.character),
-                            context.entry.end
+                            position.nextCharacter(context.entry.end.position, -context.entry.end.token.length),
+                            context.entry.end.position
                         ),
                         bracketHeader,
                     });
@@ -326,9 +422,9 @@ console.log(`context.entry: ${JSON.stringify(context.entry)}`);
                     (entry, index, array) => scanner
                     ({
                         parentEntry: context.entry,
-                        previousEntry:array[index -1],
+                        previousEntry: array[index -1],
                         entry,
-                        nextEntry:array[index +1],
+                        nextEntry: array[index +1],
                     })
                 );
             }
@@ -337,10 +433,10 @@ console.log(`context.entry: ${JSON.stringify(context.entry)}`);
         (
             (entry, index, array) => scanner
             ({
-                parentEntry:undefined,
-                previousEntry:array[index -1],
+                parentEntry: undefined,
+                previousEntry: array[index -1],
                 entry,
-                nextEntry:array[index +1],
+                nextEntry: array[index +1],
             })
         );
 
