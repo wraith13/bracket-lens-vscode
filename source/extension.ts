@@ -48,18 +48,28 @@ class DocumentDecorationCacheEntry
     {
         this.brackets = parseBrackets(document);
         this.decorationSource = getBracketDecorationSource(document, this.brackets);
+        documentDecorationCache.set(document, this);
     }
 }
-// class EditorDecorationCacheEntry
-// {
-//     public constructor()
-//     {
-//     }
-// }
+class EditorDecorationCacheEntry
+{
+    public bracketHeaderInformationDecoration?: vscode.TextEditorDecorationType;
+    public constructor(editor: vscode.TextEditor)
+    {
+        editorDecorationCache.set(editor, this);
+    }
+    public dispose = () =>
+    {
+        this.bracketHeaderInformationDecoration?.dispose();
+        this.bracketHeaderInformationDecoration = undefined;
+    };
+}
 const documentDecorationCache = new Map<vscode.TextDocument, DocumentDecorationCacheEntry>();
-// const editorDecorationCache = new Map<vscode.TextEditor, EditorDecorationCacheEntry>();
-const makeSuredocumentDecorationCache = (document: vscode.TextDocument) =>
+const makeSureDocumentDecorationCache = (document: vscode.TextDocument) =>
     documentDecorationCache.get(document) ?? new DocumentDecorationCacheEntry(document);
+const editorDecorationCache = new Map<vscode.TextEditor, EditorDecorationCacheEntry>();
+const makeSureEditorDecorationCache = (textEditor: vscode.TextEditor) =>
+    editorDecorationCache.get(textEditor) ?? new EditorDecorationCacheEntry(textEditor);
 export const regExpExecToArray = (regexp: RegExp, text: string) => profile
 (
     `regExpExecToArray(/${regexp.source}/${regexp.flags})`,
@@ -127,7 +137,7 @@ const parseBrackets = (document: vscode.TextDocument) => profile
             .concat(languageConfiguration.brackets.reduce((a, b) => a.concat(b), []))
             .concat(languageConfiguration.stringEscapes)
             .concat(languageConfiguration.strings)
-            .concat("\\n")
+            //.concat("\\n")
             .map(i => `${makeRegExpPart(i)}`)
             .join("|");
         const tokens = regExpExecToArray
@@ -147,128 +157,182 @@ const parseBrackets = (document: vscode.TextDocument) => profile
         //let state: CodeState = "neutral";
         let scopeStack: { start: TokenEntry, items: BracketEntry[] }[] = [];
         let i = 0;
-        while(i < tokens.length)
-        {
-            //const t = tokens[i];
-            if (languageConfiguration.comments.blockComment[0] === tokens[i].token)
+        profile
+        (
+            "parseBrackets.scan",
+            () =>
             {
-                while(++i < tokens.length)
+                while(i < tokens.length)
                 {
-                    if (languageConfiguration.comments.blockComment[1] === tokens[i].token)
+                    //const t = tokens[i];
+                    if (languageConfiguration.comments.blockComment[0] === tokens[i].token)
                     {
-                        ++i;
-                        break;
+                        profile
+                        (
+                            "parseBrackets.scan.blockComment",
+                            () =>
+                            {
+                                while(++i < tokens.length)
+                                {
+                                    if (languageConfiguration.comments.blockComment[1] === tokens[i].token)
+                                    {
+                                        ++i;
+                                        break;
+                                    }
+                                }
+                            }
+                        );
                     }
-                }
-            }
-            else
-            if (languageConfiguration.comments.lineComment === tokens[i].token)
-            {
-                while(++i < tokens.length)
-                {
-                    if ("\n" === tokens[i].token)
+                    else
+                    if (languageConfiguration.comments.lineComment === tokens[i].token)
                     {
-                        ++i;
-                        break;
+                        profile
+                        (
+                            "parseBrackets.scan.lineComment",
+                            () =>
+                            {
+                                const line = document.positionAt(tokens[i].index).line;
+                                while(++i < tokens.length)
+                                {
+                                    if (line !== document.positionAt(tokens[i].index).line)
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+                        );
                     }
-                }
-            }
-            else
-            if (0 <= languageConfiguration.brackets.map(j => j[0]).indexOf(tokens[i].token))
-            {
-                scopeStack.push
-                ({
-                    start:
+                    else
+                    if (0 <= languageConfiguration.brackets.map(j => j[0]).indexOf(tokens[i].token))
                     {
-                        position: document.positionAt(tokens[i].index),
-                        token: tokens[i].token,
-                    },
-                    items: [],
-                });
-                ++i;
-            }
-            else
-            if (0 <= languageConfiguration.brackets.map(j => j[1]).indexOf(tokens[i].token))
-            {
-                const scope = scopeStack.pop();
-                if (scope)
-                {
-                    const current =
-                    {
-                        start: scope.start,
-                        end:
-                        {
-                            position: document.positionAt(tokens[i].index +tokens[i].token.length),
-                            token: tokens[i].token,
-                        },
-                        items: scope.items,
-                    };
-                    if ( ! isInlineScope(current))
-                    {
-                        const parent = scopeStack[scopeStack.length -1];
-                        if (parent)
-                        {
-                            parent.items.push(current);
-                        }
-                        else
-                        {
-                            result.push(current);
-                        }
+                        profile
+                        (
+                            "parseBrackets.scan.openingBracket",
+                            () =>
+                            {
+                                scopeStack.push
+                                ({
+                                    start:
+                                    {
+                                        position: document.positionAt(tokens[i].index),
+                                        token: tokens[i].token,
+                                    },
+                                    items: [],
+                                });
+                                ++i;
+                            }
+                        );
                     }
-                }
-                ++i;
-            }
-            else
-            if (0 <= languageConfiguration.strings.indexOf(tokens[i].token))
-            {
-                const start = tokens[i].token;
-                while(++i < tokens.length)
-                {
-                    if ("\n" === tokens[i].token || start === tokens[i].token)
+                    else
+                    if (0 <= languageConfiguration.brackets.map(j => j[1]).indexOf(tokens[i].token))
                     {
-                        ++i;
-                        break;
+                        profile
+                        (
+                            "parseBrackets.scan.closingBracket",
+                            () =>
+                            {
+                                const scope = scopeStack.pop();
+                                if (scope)
+                                {
+                                    const current =
+                                    {
+                                        start: scope.start,
+                                        end:
+                                        {
+                                            position: document.positionAt(tokens[i].index +tokens[i].token.length),
+                                            token: tokens[i].token,
+                                        },
+                                        items: scope.items,
+                                    };
+                                    if ( ! isInlineScope(current))
+                                    {
+                                        const parent = scopeStack[scopeStack.length -1];
+                                        if (parent)
+                                        {
+                                            parent.items.push(current);
+                                        }
+                                        else
+                                        {
+                                            result.push(current);
+                                        }
+                                    }
+                                }
+                                ++i;
+                            }
+                        );
                     }
-                }
-            }
-            else
-            {
-                ++i;
-            }
-        };
-        while(0 < scopeStack.length)
-        {
-            const scope = scopeStack.pop();
-            if (scope)
-            {
-                const current =
-                {
-                    start: scope.start,
-                    end:
+                    else
+                    if (0 <= languageConfiguration.strings.indexOf(tokens[i].token))
                     {
-                        position: document.positionAt(text.length),
-                        token:"",
-                    },
-                    items: scope.items,
-                };
-                if ( ! isInlineScope(current))
-                {
-                    const parent = scopeStack[scopeStack.length -1];
-                    if (parent)
-                    {
-                        parent.items.push(current);
+                        profile
+                        (
+                            "parseBrackets.scan.string",
+                            () =>
+                            {
+                                const line = document.positionAt(tokens[i].index).line;
+                                const start = tokens[i].token;
+                                while(++i < tokens.length)
+                                {
+                                    if (line !== document.positionAt(tokens[i].index).line)
+                                    {
+                                        break;
+                                    }
+                                    if ("\n" === tokens[i].token || start === tokens[i].token)
+                                    {
+                                        ++i;
+                                        break;
+                                    }
+                                }
+                            }
+                        );
                     }
                     else
                     {
-                        result.push(current);
+                        ++i;
                     }
-                }
+                };
+                profile
+                (
+                    "parseBrackets.scan.rest",
+                    () =>
+                    {
+                        while(0 < scopeStack.length)
+                        {
+                            const scope = scopeStack.pop();
+                            if (scope)
+                            {
+                                const current =
+                                {
+                                    start: scope.start,
+                                    end:
+                                    {
+                                        position: document.positionAt(text.length),
+                                        token:"",
+                                    },
+                                    items: scope.items,
+                                };
+                                if ( ! isInlineScope(current))
+                                {
+                                    const parent = scopeStack[scopeStack.length -1];
+                                    if (parent)
+                                    {
+                                        parent.items.push(current);
+                                    }
+                                    else
+                                    {
+                                        result.push(current);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                    }
+                );
             }
-            else
-            {
-                break;
-            }
-        }
+        );
         return result;
     }
 );
@@ -439,9 +503,6 @@ export const getBracketDecorationSource = (document: vscode.TextDocument, bracke
                 nextEntry: array[index +1],
             })
         );
-
-        //  ここで刈り込み
-
         return result;
     }
 );
@@ -450,47 +511,55 @@ export const updateDecoration = (textEditor: vscode.TextEditor) => profile
     "updateDecoration",
     () =>
     {
-        const bracketHeaderInformationDecoration = vscode.window.createTextEditorDecorationType
-        ({
-            isWholeLine: true,
-            //color,
-        });
-        const options: vscode.DecorationOptions[] = [];
         if ("none" !== Config.mode.get(textEditor.document.languageId))
         {
-            const color = Config.color.get(textEditor.document.languageId);
-            const prefix = Config.prefix.get(textEditor.document.languageId);
-            const documentDecorationCache = makeSuredocumentDecorationCache(textEditor.document);
-            documentDecorationCache.decorationSource.forEach
-            (
-                i => options.push
+            if ( ! editorDecorationCache.get(textEditor))
+            {
+                const bracketHeaderInformationDecoration = vscode.window.createTextEditorDecorationType
                 ({
-                    range: i.range,
-                    renderOptions:
-                    {
-                        after:
+                    isWholeLine: true,
+                    //color,
+                });
+                const options: vscode.DecorationOptions[] = [];
+                const color = Config.color.get(textEditor.document.languageId);
+                const prefix = Config.prefix.get(textEditor.document.languageId);
+                makeSureDocumentDecorationCache(textEditor.document).decorationSource.forEach
+                (
+                    i => options.push
+                    ({
+                        range: i.range,
+                        renderOptions:
                         {
-                            contentText: `${prefix}${i.bracketHeader}`,
-                            color,
+                            after:
+                            {
+                                contentText: `${prefix}${i.bracketHeader}`,
+                                color,
+                            }
                         }
-                    }
-                })
-            );
+                    })
+                );
+                makeSureEditorDecorationCache(textEditor).bracketHeaderInformationDecoration = bracketHeaderInformationDecoration;
+                profile
+                (
+                    "textEditor.setDecorations",
+                    () => textEditor.setDecorations
+                    (
+                        bracketHeaderInformationDecoration,
+                        options
+                    )
+                );
+            }
         }
-        profile
-        (
-            "textEditor.setDecorations",
-            () => textEditor.setDecorations
-            (
-                bracketHeaderInformationDecoration,
-                options
-            )
-        );
+        else
+        {
+            editorDecorationCache.get(textEditor)?.dispose();
+        }
     }
 );
 export const onDidChangeConfiguration = () =>
 {
     Config.root.entries.forEach(i => i.clear());
+    updateAllDecoration();
 };
 const valueThen = <ValueT, ResultT>(value: ValueT | undefined, f: (value: ValueT) => ResultT) =>
 {
@@ -506,23 +575,25 @@ export const clearDecorationCache = (document?: vscode.TextDocument): void =>
     if (document)
     {
         documentDecorationCache.delete(document);
-        // for(const textEditor of editorDecorationCache.keys())
-        // {
-        //     if (document === textEditor.document)
-        //     {
-        //         editorDecorationCache.delete(textEditor);
-        //     }
-        // }
+        for(const textEditor of editorDecorationCache.keys())
+        {
+            if (document === textEditor.document)
+            {
+                editorDecorationCache.get(textEditor)?.dispose();
+                editorDecorationCache.delete(textEditor);
+            }
+        }
     }
     else
     {
-        // for(const textEditor of editorDecorationCache.keys())
-        // {
-        //     if (vscode.window.visibleTextEditors.indexOf(textEditor) < 0)
-        //     {
-        //         editorDecorationCache.delete(textEditor);
-        //     }
-        // }
+        for(const textEditor of editorDecorationCache.keys())
+        {
+            if (vscode.window.visibleTextEditors.indexOf(textEditor) < 0)
+            {
+                editorDecorationCache.get(textEditor)?.dispose();
+                editorDecorationCache.delete(textEditor);
+            }
+        }
     }
 };
 const getDocumentTextLength = (document: vscode.TextDocument) => document.offsetAt
@@ -543,10 +614,10 @@ export const delayUpdateDecoration = (textEditor: vscode.TextEditor): void =>
             30: // clipDelay.get(lang):
             logRate *
             (
-                10 + //basicDelay.get(lang) +
+                100 + //basicDelay.get(lang) +
                 (
                     undefined === documentDecorationCache.get(textEditor.document) ?
-                        50: // additionalDelay.get(lang):
+                        500: // additionalDelay.get(lang):
                         0
                 )
             );
@@ -637,5 +708,6 @@ export const activate = async (context: vscode.ExtensionContext) =>
         //vscode.window.onDidChangeActiveColorTheme(() => onDidChangeActiveColorTheme());
         //vscode.window.onDidChangeVisibleTextEditors(textEditers => onDidChangeVisibleTextEditors(textEditers)),
     );
+    updateAllDecoration();
 };
 export const deactivate = () => {};

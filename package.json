@@ -46,25 +46,8 @@
                     },
                     "bracketLens.color": {
                         "type": "string",
-                        "default": "#888888",
-                        "oneOf": [
-                            {
-                                "enum": [
-                                    "comments",
-                                    "strings",
-                                    "keywords",
-                                    "numbers",
-                                    "types",
-                                    "functions",
-                                    "variables",
-                                    "textMateRules",
-                                    "semanticHighlighting"
-                                ]
-                            },
-                            {
-                                "$ref": "vscode://schemas/textmate-colors#definitions/colorGroup"
-                            }
-                        ],
+                        "default": "#888888CC",
+                        "$ref": "vscode://schemas/textmate-colors#definitions/colorGroup",
                         "description": "%bracketLens.color.description%",
                         "scope": "language-overridable"
                     },
