@@ -58,12 +58,243 @@
                         "default": " 🚫 <- ",
                         "description": "%bracketLens.unmatchBracketsPrefix.description%",
                         "scope": "language-overridable"
+                    },
+                    "bracketLens.languageConfiguration":
+                    {
+                        "type": "object",
+                        "properties": {
+                            "comments": {
+                                "type": "object",
+                                "properties": {
+                                    "block": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "required": [
+                                                "opening",
+                                                "closing"
+                                            ],
+                                            "properties": {
+                                                "opening": {
+                                                    "type": "string"
+                                                },
+                                                "closing": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "line": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "brackets": {
+                                "type": "object",
+                                "properties": {
+                                    "symbol": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "required": [
+                                                "opening",
+                                                "closing"
+                                            ],
+                                            "properties": {
+                                                "opening": {
+                                                    "type": "string"
+                                                },
+                                                "closing": {
+                                                    "type": "string"
+                                                },
+                                                "headerMode":
+                                                {
+                                                    "type": "string",
+                                                    "default": "smart",
+                                                    "enum":
+                                                    [
+                                                        "before",
+                                                        "smart",
+                                                        "inner"
+                                                    ]
+                                                },
+                                                "inters": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "word": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "required": [
+                                                "opening",
+                                                "closing"
+                                            ],
+                                            "properties": {
+                                                "opening": {
+                                                    "type": "string"
+                                                },
+                                                "closing": {
+                                                    "type": "string"
+                                                },
+                                                "headerMode":
+                                                {
+                                                    "type": "string",
+                                                    "default": "inner",
+                                                    "enum":
+                                                    [
+                                                        "before",
+                                                        "smart",
+                                                        "inner"
+                                                    ]
+                                                },
+                                                "inters": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "strings": {
+                                "type": "object",
+                                "properties": {
+                                    "inline": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "required": [
+                                                "opening",
+                                                "closing",
+                                                "escape"
+                                            ],
+                                            "properties": {
+                                                "opening": {
+                                                    "type": "string"
+                                                },
+                                                "closing": {
+                                                    "type": "string"
+                                                },
+                                                "escape": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "multiline": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "required": [
+                                                "opening",
+                                                "closing",
+                                                "escape"
+                                            ],
+                                            "properties": {
+                                                "opening": {
+                                                    "type": "string"
+                                                },
+                                                "closing": {
+                                                    "type": "string"
+                                                },
+                                                "escape": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "default":
+                        {
+                            "comments": {
+                                "block": [
+                                    {
+                                        "opening": "/*",
+                                        "closing": "*/"
+                                    }
+                                ],
+                                "line":
+                                [
+                                    "//"
+                                ]
+                            },
+                            "brackets":
+                            {
+                                "symbol":
+                                [
+                                    {
+                                        "opening": "(",
+                                        "closing": ")",
+                                        "headerMode": "smart",
+                                        "inters":[]
+                                    },
+                                    {
+                                        "opening": "[",
+                                        "closing": "]",
+                                        "headerMode": "smart",
+                                        "inters":[]
+                                    },
+                                    {
+                                        "opening": "{",
+                                        "closing": "}",
+                                        "headerMode": "smart",
+                                        "inters":[]
+                                    }
+                                ],
+                                "word": []
+                            },
+                            "strings":
+                            {
+                                "inline":
+                                [
+                                    {
+                                        "opening": "\"",
+                                        "closing": "\"",
+                                        "escape": "\\\""
+                                    },
+                                    {
+                                        "opening": "`",
+                                        "closing": "`",
+                                        "escape": "\\`"
+                                    },
+                                    {
+                                        "opening": "'",
+                                        "closing": "'",
+                                        "escape": "\\'"
+                                    }
+                                ],
+                                "multiline": []
+                            }
+                        },
+                        "description": "%bracketLens.languageConfiguration.description%",
+                        "scope": "language-overridable"
                     }
                 }
             }
         ],
         "configurationDefaults":
         {
+            "[python]":
+            {
+                "bracketLens.enabled": false
+            },
+            "[xml]":
+            {
+                "bracketLens.enabled": false
+            },
             "[ignore]":
             {
                 "bracketLens.enabled": false

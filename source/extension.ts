@@ -5,6 +5,39 @@ import localeEn from "../package.nls.json";
 import localeJa from "../package.nls.ja.json";
 const locale = vscel.locale.make(localeEn, { "ja": localeJa });
 const profile = vscel.profiler.profile;
+interface ScopeTerms
+{
+    opening: string;
+    closing: string;
+}
+type HeaderMode = "before" | "smart" | "inner";
+interface BracketTrait extends ScopeTerms
+{
+    headerMode?: HeaderMode;
+    inters?: string[];
+}
+interface StringTrait extends ScopeTerms
+{
+    escape: string;
+}
+interface LanguageConfiguration
+{
+    comments?:
+    {
+        block?: ScopeTerms[],
+        line?: string[]
+    },
+    brackets?:
+    {
+        symbol?: BracketTrait[];
+        word?: BracketTrait[];
+    }
+    strings?:
+    {
+        inline?: StringTrait[];
+        multiline?: StringTrait[];
+    }
+}
 module Config
 {
     export const root = vscel.config.makeRoot(packageJson);
@@ -13,6 +46,7 @@ module Config
     export const color = root.makeEntry<string>("bracketLens.color");
     export const prefix = root.makeEntry<string>("bracketLens.prefix");
     export const unmatchBracketsPrefix = root.makeEntry<string>("bracketLens.unmatchBracketsPrefix");
+    export const languageConfiguration = root.makeEntry<LanguageConfiguration>("bracketLens.languageConfiguration");
 }
 const debug = (output: any) =>
 {
@@ -34,6 +68,7 @@ interface BracketEntry
 {
     start: TokenEntry;
     end: TokenEntry;
+    headerMode: HeaderMode;
     isUnmatchBrackets: boolean;
     items: BracketEntry[];
 }
@@ -97,7 +132,7 @@ export const regExpExecToArray = (regexp: RegExp, text: string) => profile
         return result;
     }
 );
-const makeRegExpPart = (text: string) => text.replace(/([\\\/\*\[\]\(\)\{\}\|])/gmu, "\\$1");
+const makeRegExpPart = (text: string) => text.replace(/([\\\/\*\[\]\(\)\{\}\|])/gmu, "\\$1").replace(/\s+/, "\\s");
 const isInlineScope = (bracket: BracketEntry) => bracket.end.position.line <= bracket.start.position.line;
 const parseBrackets = (document: vscode.TextDocument) => profile
 (
@@ -105,72 +140,112 @@ const parseBrackets = (document: vscode.TextDocument) => profile
     (): BracketEntry[] =>
     {
         const result:BracketEntry[] = [];
-        const languageConfiguration =
+        const languageConfiguration: LanguageConfiguration =
         {
             "comments": {
-                "blockComment": [
-                    "/*",
-                    "*/"
+                "block": [
+                    {
+                        "opening": "/*",
+                        "closing": "*/",
+                    }
                 ],
-                "lineComment":
+                "line":
                 [
                     "//"
                 ]
             },
-            "brackets": [
+            "brackets":
+            {
+                "symbol":
                 [
-                    "(",
-                    ")"
+                    {
+                        "opening": "(",
+                        "closing": ")",
+                    },
+                    {
+                        "opening": "[",
+                        "closing": "]",
+                    },
+                    {
+                        "opening": "{",
+                        "closing": "}",
+                    }
                 ],
-                [
-                    "[",
-                    "]"
-                ],
-                [
-                    "{",
-                    "}"
-                ]
-            ],
-            "wordBrackets": [
+                // "word":
                 // [
-                //     "module",
-                //     "end"
-                // ],
-                // [
-                //     "class",
-                //     "end"
-                // ],
-                // [
-                //     "def",
-                //     "end"
-                // ],
-                // [
-                //     "if",
-                //     "end"
+                //     {
+                //         opening: "module",
+                //         closing: "end",
+                //     },
+                //     {
+                //         opening: "class",
+                //         closing: "end",
+                //     },
+                //     {
+                //         opening: "def",
+                //         closing: "end",
+                //     }
                 // ]
-            ],
-            "strings": [
-                "\"",
-                "\`",
-                "\'",
-            ],
-            "stringEscapes": [
-                "\\\"",
-                "\\\`",
-                "\\\'",
-            ]
+            },
+            "strings":
+            {
+                "inline":
+                [
+                    {
+                        "opening": "\"",
+                        "closing": "\"",
+                        "escape": "\\\""
+                    },
+                    {
+                        "opening": "\`",
+                        "closing": "\`",
+                        "escape": "\\\`"
+                    },
+                    {
+                        "opening": "\'",
+                        "closing": "\'",
+                        "escape": "\\\'"
+                    },
+                ]
+            }
         };
-        const text = document.getText();
+        const openingBlockComments = languageConfiguration.comments?.block?.map(i => i.opening) ?? [];
+        const closingBlockComments = languageConfiguration.comments?.block?.map(i => i.closing) ?? [];
+        const lineComments = languageConfiguration.comments?.line ?? [];
+        const openingSymbolBrackets = languageConfiguration.brackets?.symbol?.map(i => i.opening) ?? [];
+        const symbolBracketInters = languageConfiguration.brackets?.symbol?.map(i => i.inters ?? [])?.reduce((a, b) => a.concat(b), []) ?? [];
+        const closingSymbolBrackets = languageConfiguration.brackets?.symbol?.map(i => i.closing) ?? [];
+        const symbolBracketsHeader = languageConfiguration.brackets?.symbol?.map(i => i.headerMode ?? "smart") ?? [];
+        const openingWordBrackets = languageConfiguration.brackets?.word?.map(i => i.opening) ?? [];
+        const wordBracketInters = languageConfiguration.brackets?.word?.map(i => i.inters ?? [])?.reduce((a, b) => a.concat(b), []) ?? [];
+        const closingWordBrackets = languageConfiguration.brackets?.word?.map(i => i.closing) ?? [];
+        const wordBracketsHeader = languageConfiguration.brackets?.word?.map(i => i.headerMode ?? "inner") ?? [];
+        const openingInlineStrings = languageConfiguration.strings?.inline?.map(i => i.opening) ?? [];
+        const escapeInlineStrings = languageConfiguration.strings?.inline?.map(i => i.escape) ?? [];
+        const closingInlineStrings = languageConfiguration.strings?.inline?.map(i => i.closing) ?? [];
+        const openingMultilineStrings = languageConfiguration.strings?.multiline?.map(i => i.opening) ?? [];
+        const escapeMultilineStrings = languageConfiguration.strings?.multiline?.map(i => i.escape) ?? [];
+        const closingMultilineStrings = languageConfiguration.strings?.multiline?.map(i => i.closing) ?? [];
         const pattern = (<string[]>[])
-            .concat(languageConfiguration.comments.blockComment)
-            .concat(languageConfiguration.comments.lineComment)
-            .concat(languageConfiguration.brackets.reduce((a, b) => a.concat(b), []))
-            .concat(languageConfiguration.wordBrackets.reduce((a, b) => a.concat(b), []))
-            .concat(languageConfiguration.stringEscapes)
-            .concat(languageConfiguration.strings)
-            //.concat("\\n")
+            .concat(openingBlockComments)
+            .concat(closingBlockComments)
+            .concat(lineComments)
+            .concat(openingSymbolBrackets)
+            .concat(symbolBracketInters)
+            .concat(closingSymbolBrackets)
+            .concat(openingWordBrackets)
+            .concat(wordBracketInters)
+            .concat(closingWordBrackets)
+            .concat(openingInlineStrings)
+            .concat(escapeInlineStrings)
+            .concat(closingInlineStrings)
+            .concat(openingMultilineStrings)
+            .concat(escapeMultilineStrings)
+            .concat(closingMultilineStrings)
+            .filter((entry, index, array) => "" !== entry && index === array.indexOf(entry))
             .map(i => `${makeRegExpPart(i)}`)
             .join("|");
+        const text = document.getText();
         const tokens = regExpExecToArray
         (
             new RegExp(pattern, "gu"),
@@ -202,24 +277,83 @@ const parseBrackets = (document: vscode.TextDocument) => profile
             "parseBrackets.scan",
             () =>
             {
-                let scopeStack: { start: TokenEntry, items: BracketEntry[] }[] = [];
+                let scopeStack: { start: TokenEntry, closing:string, headerMode: HeaderMode, items: BracketEntry[] }[] = [];
                 let i = 0;
-                const openingBrackets = languageConfiguration.brackets.map(i => i[0]);
-                const closingBrackets = languageConfiguration.brackets.map(i => i[1]);
-                const openingWordBrackets = <string[]>languageConfiguration.wordBrackets.map(i => i[0]);
-                const closingWordBrackets = <string[]>languageConfiguration.wordBrackets.map(i => i[1]);
+                const writeCore = (entry: BracketEntry) => profile
+                (
+                    "parseBrackets.scan.writeCore",
+                    () =>
+                    {
+                        if ( ! isInlineScope(entry) || entry.isUnmatchBrackets)
+                        {
+                            const parent = scopeStack[scopeStack.length -1];
+                            if (parent)
+                            {
+                                parent.items.push(entry);
+                            }
+                            else
+                            {
+                                result.push(entry);
+                            }
+                        }
+                    }
+                );
+                const write = (closingToken: { index: number, token: string }) => profile
+                (
+                    "parseBrackets.scan.write",
+                    () =>
+                    {
+                        const scope = scopeStack.pop();
+                        if (scope)
+                        {
+                            writeCore
+                            ({
+                                start: scope.start,
+                                end:
+                                {
+                                    position: document.positionAt(closingToken.index +closingToken.token.length),
+                                    token: closingToken.token,
+                                },
+                                headerMode: scope.headerMode,
+                                isUnmatchBrackets: scope.closing !== closingToken.token,
+                                items: scope.items,
+                            });
+                        }
+                        else
+                        {
+                            //  余分な閉じ括弧
+                            writeCore
+                            ({
+                                start:
+                                {
+                                    position: document.positionAt(closingToken.index),
+                                    token: closingToken.token,
+                                },
+                                end:
+                                {
+                                    position: document.positionAt(closingToken.index +closingToken.token.length),
+                                    token: closingToken.token,
+                                },
+                                headerMode: "smart",
+                                isUnmatchBrackets: true,
+                                items: [],
+                            });
+                        }
+                    }
+                );
                 while(i < tokens.length)
                 {
-                    if (languageConfiguration.comments.blockComment[0] === tokens[i].token)
+                    if (0 <= openingBlockComments.indexOf(tokens[i].token))
                     {
                         profile
                         (
                             "parseBrackets.scan.blockComment",
                             () =>
                             {
+                                const closing = closingBlockComments[openingBlockComments.indexOf(tokens[i].token)];
                                 while(++i < tokens.length)
                                 {
-                                    if (languageConfiguration.comments.blockComment[1] === tokens[i].token)
+                                    if (closing === tokens[i].token)
                                     {
                                         ++i;
                                         break;
@@ -229,7 +363,7 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                         );
                     }
                     else
-                    if (0 <= languageConfiguration.comments.lineComment.indexOf(tokens[i].token))
+                    if (0 <= lineComments.indexOf(tokens[i].token))
                     {
                         profile
                         (
@@ -248,18 +382,14 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                         );
                     }
                     else
-                    if
-                    (
-                        0 <= openingBrackets.indexOf(tokens[i].token) ||
-                        (0 <= openingWordBrackets.indexOf(tokens[i].token) &&
-                        isSureMatchWord(tokens[i]))
-                    )
+                    if (0 <= openingSymbolBrackets.indexOf(tokens[i].token))
                     {
                         profile
                         (
-                            "parseBrackets.scan.openingBracket",
+                            "parseBrackets.scan.openingSymbolBracket",
                             () =>
                             {
+                                const index = openingSymbolBrackets.indexOf(tokens[i].token);
                                 scopeStack.push
                                 ({
                                     start:
@@ -267,6 +397,32 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                                         position: document.positionAt(tokens[i].index),
                                         token: tokens[i].token,
                                     },
+                                    closing: closingSymbolBrackets[index],
+                                    headerMode: symbolBracketsHeader[index],
+                                    items: [],
+                                });
+                                ++i;
+                            }
+                        );
+                    }
+                    else
+                    if (0 <= openingWordBrackets.indexOf(tokens[i].token) && isSureMatchWord(tokens[i]))
+                    {
+                        profile
+                        (
+                            "parseBrackets.scan.openingWordBracket",
+                            () =>
+                            {
+                                const index = openingWordBrackets.indexOf(tokens[i].token);
+                                scopeStack.push
+                                ({
+                                    start:
+                                    {
+                                        position: document.positionAt(tokens[i].index),
+                                        token: tokens[i].token,
+                                    },
+                                    closing: closingWordBrackets[index],
+                                    headerMode: wordBracketsHeader[index],
                                     items: [],
                                 });
                                 ++i;
@@ -276,7 +432,7 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                     else
                     if
                     (
-                        0 <= closingBrackets.indexOf(tokens[i].token) ||
+                        0 <= closingSymbolBrackets.indexOf(tokens[i].token) ||
                         (0 <= closingWordBrackets.indexOf(tokens[i].token) &&
                         isSureMatchWord(tokens[i]))
                     )
@@ -286,56 +442,48 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                             "parseBrackets.scan.closingBracket",
                             () =>
                             {
-                                const scope = scopeStack.pop();
-                                if (scope)
-                                {
-                                    const current =
-                                    {
-                                        start: scope.start,
-                                        end:
-                                        {
-                                            position: document.positionAt(tokens[i].index +tokens[i].token.length),
-                                            token: tokens[i].token,
-                                        },
-                                        isUnmatchBrackets:
-                                            closingBrackets[openingBrackets.indexOf(scope.start.token)] !== tokens[i].token &&
-                                            closingWordBrackets[openingWordBrackets.indexOf(scope.start.token)] !== tokens[i].token,
-                                        items: scope.items,
-                                    };
-                                    if ( ! isInlineScope(current))
-                                    {
-                                        const parent = scopeStack[scopeStack.length -1];
-                                        if (parent)
-                                        {
-                                            parent.items.push(current);
-                                        }
-                                        else
-                                        {
-                                            result.push(current);
-                                        }
-                                    }
-                                }
+                                write(tokens[i]);
                                 ++i;
                             }
                         );
                     }
                     else
-                    if (0 <= languageConfiguration.strings.indexOf(tokens[i].token))
+                    if (0 <= openingInlineStrings.indexOf(tokens[i].token))
                     {
                         profile
                         (
-                            "parseBrackets.scan.string",
+                            "parseBrackets.scan.inlineString",
                             () =>
                             {
                                 const line = document.positionAt(tokens[i].index).line;
-                                const start = tokens[i].token;
+                                const closing = closingInlineStrings[openingInlineStrings.indexOf(tokens[i].token)];
                                 while(++i < tokens.length)
                                 {
                                     if (line !== document.positionAt(tokens[i].index).line)
                                     {
                                         break;
                                     }
-                                    if ("\n" === tokens[i].token || start === tokens[i].token)
+                                    if (closing === tokens[i].token)
+                                    {
+                                        ++i;
+                                        break;
+                                    }
+                                }
+                            }
+                        );
+                    }
+                    else
+                    if (0 <= openingMultilineStrings.indexOf(tokens[i].token))
+                    {
+                        profile
+                        (
+                            "parseBrackets.scan.multilineString",
+                            () =>
+                            {
+                                const closing = closingMultilineStrings[openingMultilineStrings.indexOf(tokens[i].token)];
+                                while(++i < tokens.length)
+                                {
+                                    if (closing === tokens[i].token)
                                     {
                                         ++i;
                                         break;
@@ -357,37 +505,7 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                     {
                         while(0 < scopeStack.length)
                         {
-                            const scope = scopeStack.pop();
-                            if (scope)
-                            {
-                                const current =
-                                {
-                                    start: scope.start,
-                                    end:
-                                    {
-                                        position: document.positionAt(text.length),
-                                        token:"",
-                                    },
-                                    isUnmatchBrackets: true,
-                                    items: scope.items,
-                                };
-                                if ( ! isInlineScope(current))
-                                {
-                                    const parent = scopeStack[scopeStack.length -1];
-                                    if (parent)
-                                    {
-                                        parent.items.push(current);
-                                    }
-                                    else
-                                    {
-                                        result.push(current);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                break;
-                            }
+                            write({ index: text.length, token: ""});
                         }
                     }
                 );
@@ -427,7 +545,9 @@ const getBracketHeader =
             //.replace(/\W/gmu, "")
             .replace(/,/gmu, "")
             .trim().length;
-        const topLimit =
+        if ("inner" !== context.entry.headerMode)
+        {
+            const topLimit =
             context.previousEntry?.end.position ??
             (
                 undefined !== context.parentEntry ?
@@ -438,74 +558,78 @@ const getBracketHeader =
                     ):
                     new vscode.Position(0, 0)
             );
-        const lineHead = position.max
-        ([
-            topLimit,
-            position.nextLine(context.entry.start.position, 0),
-        ]);
-        const currnetLineHeader = regulateHeader(document.getText(new vscode.Range(lineHead, context.entry.start.position)));
-        if (isValidHeader(currnetLineHeader))
-        {
-            return currnetLineHeader;
-        }
-        if (topLimit.line < context.entry.start.position.line)
-        {
-            const previousLineHead = position.max
+            const lineHead = position.max
             ([
                 topLimit,
-                position.nextLine(context.entry.start.position, -1),
+                position.nextLine(context.entry.start.position, 0),
             ]);
-            const previousLineHeader = regulateHeader(document.getText(new vscode.Range(previousLineHead, lineHead)));
-            if (isValidHeader(previousLineHeader))
+            const currnetLineHeader = regulateHeader(document.getText(new vscode.Range(lineHead, context.entry.start.position)));
+            if (isValidHeader(currnetLineHeader))
             {
-                return previousLineHeader;
+                return currnetLineHeader;
+            }
+            if (topLimit.line < context.entry.start.position.line)
+            {
+                const previousLineHead = position.max
+                ([
+                    topLimit,
+                    position.nextLine(context.entry.start.position, -1),
+                ]);
+                const previousLineHeader = regulateHeader(document.getText(new vscode.Range(previousLineHead, lineHead)));
+                if (isValidHeader(previousLineHeader))
+                {
+                    return previousLineHeader;
+                }
             }
         }
-        const currnetLineInnerHeader = regulateHeader
-        (
-            document.getText
-            (
-                new vscode.Range
-                (
-                    context.entry.start.position,
-                    // position.nextCharacter
-                    // (
-                    //     context.entry.start.position,
-                    //     context.entry.start.token.length
-                    // ),
-                    position.nextLine(context.entry.start.position, +1)
-                )
-            )
-        );
-        if (isValidHeader(currnetLineInnerHeader))
+        if ("before" !== context.entry.headerMode)
         {
-            return currnetLineInnerHeader;
-        }
-        const innerHeader = regulateHeader
-        (
-            document.getText
+            const currnetLineInnerHeader = regulateHeader
             (
-                new vscode.Range
+                document.getText
                 (
-                    context.entry.start.position,
-                    position.min
-                    ([
-                        position.nextLine(context.entry.start.position, +16),
-                        context.entry.end.position,
-                    ])
+                    new vscode.Range
+                    (
+                        context.entry.start.position,
+                        // position.nextCharacter
+                        // (
+                        //     context.entry.start.position,
+                        //     context.entry.start.token.length
+                        // ),
+                        position.nextLine(context.entry.start.position, +1)
+                    )
                 )
-            )
-        );
-        if (isValidHeader(innerHeader))
-        {
-            const maxHeaderLength = 80;
-            if (innerHeader.length <= maxHeaderLength)
+            );
+            if (isValidHeader(currnetLineInnerHeader))
             {
-                return innerHeader;
+                return currnetLineInnerHeader;
             }
-            else
+            const innerHeader = regulateHeader
+            (
+                document.getText
+                (
+                    new vscode.Range
+                    (
+                        context.entry.start.position,
+                        position.min
+                        ([
+                            position.nextLine(context.entry.start.position, +16),
+                            context.entry.end.position,
+                        ])
+                    )
+                )
+            );
+            if (isValidHeader(innerHeader))
             {
-                return innerHeader.substring(0, maxHeaderLength) +"...";
+                const maxHeaderLength = 80;
+                if (innerHeader.length <= maxHeaderLength)
+                {
+                    return innerHeader;
+                }
+                else
+                {
+                    return innerHeader.substring(0, maxHeaderLength) +"...";
+                }
             }
         }
         return "";
