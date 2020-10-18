@@ -5,6 +5,7 @@
     "bracketLens.color.description": "TBD",
     "bracketLens.prefix.description": "TBD",
     "bracketLens.unmatchBracketsPrefix.description": "TBD",
+    "bracketLens.languageConfiguration.description": "TBD",
     "🚫 You have already started the profile.": "🚫 既にプロファイル開始しています。",
     "⏱ Start Profile!": "⏱ プロファイル開始！",
     "🏁 Stop Profile!": "🏁 プロファイル終了！",

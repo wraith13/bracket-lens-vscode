@@ -140,75 +140,7 @@ const parseBrackets = (document: vscode.TextDocument) => profile
     (): BracketEntry[] =>
     {
         const result:BracketEntry[] = [];
-        const languageConfiguration: LanguageConfiguration =
-        {
-            "comments": {
-                "block": [
-                    {
-                        "opening": "/*",
-                        "closing": "*/",
-                    }
-                ],
-                "line":
-                [
-                    "//"
-                ]
-            },
-            "brackets":
-            {
-                "symbol":
-                [
-                    {
-                        "opening": "(",
-                        "closing": ")",
-                    },
-                    {
-                        "opening": "[",
-                        "closing": "]",
-                    },
-                    {
-                        "opening": "{",
-                        "closing": "}",
-                    }
-                ],
-                // "word":
-                // [
-                //     {
-                //         opening: "module",
-                //         closing: "end",
-                //     },
-                //     {
-                //         opening: "class",
-                //         closing: "end",
-                //     },
-                //     {
-                //         opening: "def",
-                //         closing: "end",
-                //     }
-                // ]
-            },
-            "strings":
-            {
-                "inline":
-                [
-                    {
-                        "opening": "\"",
-                        "closing": "\"",
-                        "escape": "\\\""
-                    },
-                    {
-                        "opening": "\`",
-                        "closing": "\`",
-                        "escape": "\\\`"
-                    },
-                    {
-                        "opening": "\'",
-                        "closing": "\'",
-                        "escape": "\\\'"
-                    },
-                ]
-            }
-        };
+        const languageConfiguration = Config.languageConfiguration.get(document.languageId);
         const openingBlockComments = languageConfiguration.comments?.block?.map(i => i.opening) ?? [];
         const closingBlockComments = languageConfiguration.comments?.block?.map(i => i.closing) ?? [];
         const lineComments = languageConfiguration.comments?.line ?? [];
@@ -600,7 +532,7 @@ const getBracketHeader =
                     )
                 )
             );
-            if (isValidHeader(currnetLineInnerHeader))
+            if (isValidHeader(currnetLineInnerHeader) && currnetLineInnerHeader !== context.entry.start.token)
             {
                 return currnetLineInnerHeader;
             }

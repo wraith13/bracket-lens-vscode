@@ -143,7 +143,8 @@
                                                     "type": "string"
                                                 },
                                                 "closing": {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "default": "end"
                                                 },
                                                 "headerMode":
                                                 {
