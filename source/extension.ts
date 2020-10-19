@@ -285,7 +285,7 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                 );
                 while(i < tokens.length)
                 {
-                    const token = regulate(tokens[i].token)
+                    const token = regulate(tokens[i].token);
                     if (0 <= openingBlockComments.indexOf(token))
                     {
                         profile
