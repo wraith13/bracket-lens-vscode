@@ -63,6 +63,10 @@
                     {
                         "type": "object",
                         "properties": {
+                            "ignoreCase": {
+                                "type": "boolean",
+                                "default": false
+                            },
                             "comments": {
                                 "type": "object",
                                 "properties": {
@@ -220,6 +224,7 @@
                         },
                         "default":
                         {
+                            "ignoreCase": false,
                             "comments": {
                                 "block": [
                                     {
