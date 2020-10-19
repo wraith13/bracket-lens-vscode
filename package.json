@@ -36,13 +36,13 @@
                     },
                     "bracketLens.debug": {
                         "type": "boolean",
-                        "default": true,
+                        "default": false,
                         "description": "%bracketLens.debug.description%",
                         "scope": "window"
                     },
                     "bracketLens.color": {
                         "type": "string",
-                        "default": "#888888CC",
+                        "default": "#8888AAAA",
                         "$ref": "vscode://schemas/textmate-colors#definitions/colorGroup",
                         "description": "%bracketLens.color.description%",
                         "scope": "language-overridable"
@@ -288,11 +288,35 @@
         ],
         "configurationDefaults":
         {
+            "[plaintext]":
+            {
+                "bracketLens.enabled": false
+            },
+            "[csv]":
+            {
+                "bracketLens.enabled": false
+            },
+            "[tsv]":
+            {
+                "bracketLens.enabled": false
+            },
+            "[markdown]":
+            {
+                "bracketLens.enabled": false
+            },
+            "[html]":
+            {
+                "bracketLens.enabled": false
+            },
             "[python]":
             {
                 "bracketLens.enabled": false
             },
             "[xml]":
+            {
+                "bracketLens.enabled": false
+            },
+            "[xsl]":
             {
                 "bracketLens.enabled": false
             },
