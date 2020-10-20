@@ -47,6 +47,7 @@ module Config
     export const color = root.makeEntry<string>("bracketLens.color");
     export const prefix = root.makeEntry<string>("bracketLens.prefix");
     export const unmatchBracketsPrefix = root.makeEntry<string>("bracketLens.unmatchBracketsPrefix");
+    export const maxBracketHeaderLength = root.makeEntry<number>("bracketLens.maxBracketHeaderLength");
     export const languageConfiguration = root.makeEntry<LanguageConfiguration>("bracketLens.languageConfiguration");
 }
 const debug = (output: any) =>
@@ -482,7 +483,16 @@ const getBracketHeader =
     "getBracketHeader",
     (): string =>
     {
-        const regulateHeader = (text: string) => text.replace(/\s+/gu, " ").trim();
+        const maxBracketHeaderLength = Config.maxBracketHeaderLength.get(document.languageId);
+        const regulateHeader = (text: string) =>
+        {
+            let result = text.replace(/\s+/gu, " ").trim();
+            if (maxBracketHeaderLength < result.length)
+            {
+                return result.substring(0, maxBracketHeaderLength -3) +"...";
+            }
+            return result;
+        };
         const isValidHeader = (text: string) => 0 < text
             //.replace(/\W/gmu, "")
             .replace(/,/gmu, "")
@@ -542,7 +552,7 @@ const getBracketHeader =
                     )
                 )
             );
-            if (isValidHeader(currnetLineInnerHeader) && currnetLineInnerHeader !== context.entry.start.token)
+            if (isValidHeader(currnetLineInnerHeader) && currnetLineInnerHeader !== regulateHeader(context.entry.start.token))
             {
                 return currnetLineInnerHeader;
             }
@@ -563,15 +573,7 @@ const getBracketHeader =
             );
             if (isValidHeader(innerHeader))
             {
-                const maxHeaderLength = 80;
-                if (innerHeader.length <= maxHeaderLength)
-                {
-                    return innerHeader;
-                }
-                else
-                {
-                    return innerHeader.substring(0, maxHeaderLength) +"...";
-                }
+                return innerHeader;
             }
         }
         return "";
