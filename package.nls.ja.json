@@ -6,7 +6,7 @@
     "bracketLens.prefix.description": "ブラケットヘッダーのプリフィックス。",
     "bracketLens.unmatchBracketsPrefix.description": "括弧が一致しない場合のブラケットヘッダープレフィックス。",
     "bracketLens.languageConfiguration.description": "言語解析設定。",
-    "bracketLens.maxBracketHeaderLength.description": "ブラケットヘッダーの最大長。( プリフィックスは含みません )",
+    "bracketLens.maxBracketHeaderLength.description": "この値を超える長さのブラケットヘッダーは末尾が省略されて表示されます。( プリフィックスは含みません )",
     "🚫 You have already started the profile.": "🚫 既にプロファイル開始しています。",
     "⏱ Start Profile!": "⏱ プロファイル開始！",
     "🏁 Stop Profile!": "🏁 プロファイル終了！",

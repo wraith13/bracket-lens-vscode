@@ -99,15 +99,27 @@ class DocumentDecorationCacheEntry
 }
 class EditorDecorationCacheEntry
 {
-    public bracketHeaderInformationDecoration?: vscode.TextEditorDecorationType;
+    private isDirtyValue: boolean = false;
+    private bracketHeaderInformationDecoration?: vscode.TextEditorDecorationType;
     public constructor(editor: vscode.TextEditor)
     {
         editorDecorationCache.set(editor, this);
     }
+    public isDirty = () => this.isDirtyValue;
+    public setDirty = () =>
+    {
+        this.isDirtyValue = true;
+    };
+    public setBracketHeaderInformationDecoration = (bracketHeaderInformationDecoration?: vscode.TextEditorDecorationType) =>
+    {
+        this.dispose();
+        this.bracketHeaderInformationDecoration = bracketHeaderInformationDecoration;
+    };
     public dispose = () =>
     {
         this.bracketHeaderInformationDecoration?.dispose();
         this.bracketHeaderInformationDecoration = undefined;
+        this.isDirtyValue = false;
     };
 }
 const documentDecorationCache = new Map<vscode.TextDocument, DocumentDecorationCacheEntry>();
@@ -646,7 +658,8 @@ export const updateDecoration = (textEditor: vscode.TextEditor) => profile
     {
         if (Config.enabled.get(textEditor.document.languageId))
         {
-            if ( ! editorDecorationCache.get(textEditor))
+            const editorCache = editorDecorationCache.get(textEditor);
+            if (undefined === editorCache || editorCache.isDirty())
             {
                 const bracketHeaderInformationDecoration = vscode.window.createTextEditorDecorationType
                 ({
@@ -670,7 +683,8 @@ export const updateDecoration = (textEditor: vscode.TextEditor) => profile
                         }
                     })
                 );
-                makeSureEditorDecorationCache(textEditor).bracketHeaderInformationDecoration = bracketHeaderInformationDecoration;
+                makeSureEditorDecorationCache(textEditor)
+                    .setBracketHeaderInformationDecoration(bracketHeaderInformationDecoration);
                 profile
                 (
                     "textEditor.setDecorations",
@@ -692,7 +706,7 @@ export const updateDecoration = (textEditor: vscode.TextEditor) => profile
 export const onDidChangeConfiguration = () =>
 {
     Config.root.entries.forEach(i => i.clear());
-    clearDecorationCache();
+    clearAllDecorationCache();
     updateAllDecoration();
 };
 const valueThen = <ValueT, ResultT>(value: ValueT | undefined, f: (value: ValueT) => ResultT) =>
@@ -704,6 +718,14 @@ const valueThen = <ValueT, ResultT>(value: ValueT | undefined, f: (value: ValueT
     return undefined;
 };
 const activeTextEditor = <T>(f: (textEditor: vscode.TextEditor) => T) => valueThen(vscode.window.activeTextEditor, f);
+export const clearAllDecorationCache = (): void =>
+{
+    documentDecorationCache.clear();
+    for(const textEditor of editorDecorationCache.keys())
+    {
+        editorDecorationCache.get(textEditor)?.setDirty();
+    }
+};
 export const clearDecorationCache = (document?: vscode.TextDocument): void =>
 {
     if (document)
@@ -713,20 +735,16 @@ export const clearDecorationCache = (document?: vscode.TextDocument): void =>
         {
             if (document === textEditor.document)
             {
-                editorDecorationCache.get(textEditor)?.dispose();
-                editorDecorationCache.delete(textEditor);
+                editorDecorationCache.get(textEditor)?.setDirty();
             }
         }
     }
-    else
+    for(const textEditor of editorDecorationCache.keys())
     {
-        for(const textEditor of editorDecorationCache.keys())
+        if (vscode.window.visibleTextEditors.indexOf(textEditor) < 0)
         {
-            if (vscode.window.visibleTextEditors.indexOf(textEditor) < 0)
-            {
-                editorDecorationCache.get(textEditor)?.dispose();
-                editorDecorationCache.delete(textEditor);
-            }
+            editorDecorationCache.get(textEditor)?.dispose();
+            editorDecorationCache.delete(textEditor);
         }
     }
 };
@@ -771,7 +789,7 @@ export const delayUpdateDecoration = (textEditor: vscode.TextEditor): void =>
 };
 export const updateAllDecoration = () =>
     vscode.window.visibleTextEditors
-        .filter(i => i.viewColumn)
+        .filter(i => undefined !== i.viewColumn)
         .forEach(i => delayUpdateDecoration(i));
 export const onDidChangeWorkspaceFolders = onDidChangeConfiguration;
 export const onDidChangeActiveTextEditor = (): void =>
@@ -784,7 +802,7 @@ export const onDidChangeTextDocument = (document: vscode.TextDocument): void =>
 {
     clearDecorationCache(document);
     vscode.window.visibleTextEditors
-        .filter(i => i.viewColumn)
+        .filter(i => undefined !== i.viewColumn)
         .filter(i => i.document === document)
         .forEach(i => delayUpdateDecoration(i));
 };

@@ -6,7 +6,7 @@
     "bracketLens.prefix.description": "Bracket header prefix.",
     "bracketLens.unmatchBracketsPrefix.description": "Bracket header prefix when unmatch brackets.",
     "bracketLens.languageConfiguration.description": "Language parsing settings.",
-    "bracketLens.maxBracketHeaderLength.description": "Max bracket header length. ( not include prefix )",
+    "bracketLens.maxBracketHeaderLength.description": "Bracket header length than this value are displayed with the tail omitted. ( not include prefix )",
     "🚫 You have already started the profile.": "🚫 You have already started the profile.",
     "⏱ Start Profile!": "⏱ Start Profile!",
     "🏁 Stop Profile!": "🏁 Stop Profile!",
