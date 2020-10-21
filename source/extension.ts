@@ -48,6 +48,7 @@ module Config
     export const prefix = root.makeEntry<string>("bracketLens.prefix");
     export const unmatchBracketsPrefix = root.makeEntry<string>("bracketLens.unmatchBracketsPrefix");
     export const maxBracketHeaderLength = root.makeEntry<number>("bracketLens.maxBracketHeaderLength");
+    export const minBracketScopeLines = root.makeEntry<number>("bracketLens.minBracketScopeLines");
     export const languageConfiguration = root.makeEntry<LanguageConfiguration>("bracketLens.languageConfiguration");
 }
 const debug = (output: any) =>
@@ -598,11 +599,11 @@ export const getBracketDecorationSource = (document: vscode.TextDocument, bracke
     {
         const prefix = Config.prefix.get(document.languageId);
         const unmatchBracketsPrefix = Config.unmatchBracketsPrefix.get(document.languageId);
+        const minBracketScopeLines = Config.minBracketScopeLines.get(document.languageId);
         const result: BracketDecorationSource[] = [];
         const scanner = (context: BracketContext) =>
         {
-            // １行に収まる場合はスキップ
-            if (context.entry.start.position.line < context.entry.end.position.line)
+            if (minBracketScopeLines <= (context.entry.end.position.line -context.entry.start.position.line) +1)
             {
                 if
                 (

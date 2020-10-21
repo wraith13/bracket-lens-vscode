@@ -67,6 +67,14 @@
                         "description": "%bracketLens.maxBracketHeaderLength.description%",
                         "scope": "language-overridable"
                     },
+                    "bracketLens.minBracketScopeLines": {
+                        "type": "integer",
+                        "default": 5,
+                        "minimum": 2,
+                        "maximum": 80,
+                        "description": "%bracketLens.minBracketScopeLines.description%",
+                        "scope": "language-overridable"
+                    },
                     "bracketLens.languageConfiguration":
                     {
                         "type": "object",
