@@ -2,13 +2,17 @@
 
 [![Visual Studio Marketplace](https://vsmarketplacebadge.apphb.com/version/wraith13.bracket-lens.svg) ![installs](https://vsmarketplacebadge.apphb.com/installs/wraith13.bracket-lens.svg) ![rating](https://vsmarketplacebadge.apphb.com/rating/wraith13.bracket-lens.svg)](https://marketplace.visualstudio.com/items?itemName=wraith13.bracket-lens)
 
-Show bracket head on closing bracket.
-
-🚧 Under development.
+Show bracket header on closing bracket.
 
 ## Features
 
-### Screenshots
+Displays the text in the header part of the scope after the closing brace.
+
+### Screenshot
+
+![](./images/screenshot.png)
+
+![](./images/screenshot2.png)
 
 ## Tutorial
 
@@ -16,32 +20,52 @@ Show bracket head on closing bracket.
 
 Show extension side bar within VS Code(Mac:`Command`+`Shift`+`X`, Windows and Linux: `Ctrl`+`Shift`+`X`), type `Bracket Lens` and press `Enter` and click `Install`.
 
-### 1. 🚀 Edit settings
+### 1. 👉 Show bracket header on closing bracket
 
-Launch Command Palette, Execute `Bracket Lens: Edit Settings` command or click gear icon on status bar or keyboard shortcut ( Mac:`Command`+`Shift`+`,`, Windows and Linux: `Ctrl`+`Shift`+`,` ). You can edit VS Code settings.
+Open the source code file for a symbol bracket type language like TypeScript. Information is automatically displayed after the closing brace.
 
 ### 2. 🔧 Next step
 
-You can change [settings](#extension-settings). And you can edit [keyboard shortcuts](#keyboard-shortcut-settings) by `keybindings.json`.
+Please see [Notes](#notes). You can change [settings](#extension-settings). And you can edit [keyboard shortcuts](#keyboard-shortcut-settings) by `keybindings.json`.
 
 Enjoy!
 
 ## Commands
 
-* `Bracket Lens: Edit Settings` : Edit VS Code's settings.
-* `Bracket Lens: Undo Setting` : Undo VS Code's settings.
-* `Bracket Lens: Redo Setting` : Redo VS Code's settings.
-* `Bracket Lens: Clear Setting History` : Clear recently information. This command can only be used in debug mode.
+* `Bracket Lens: Report Profile` : Report a profile.
 
 ## Extension Settings
 
 This extension contributes the following settings by [`settings.json`](https://code.visualstudio.com/docs/customization/userandworkspace#_creating-user-and-workspace-settings)( Mac: `Command`+`,`, Windows / Linux: `File` -> `Preferences` -> `User Settings` ):
 
-* `bracketLens.preview`: Temporarily apply the settings before confirming.
-* `bracketLens.disabledPreviewSettings`: A list of settings for which you want to disable the settings preview.
+* `bracketLens.enabled`: Temporarily apply the settings before confirming.
 * `bracketLens.debug`: Debug mode.
-* `bracketLens.statusBarAlignment`: Alignment on status bar.
-* `bracketLens.statusBarText`: Status bar's label.
+* `bracketLens.color.description`: The color of the bracket header that appears after the closing bracket.
+* `bracketLens.prefix.description`: Bracket header prefix.
+* `bracketLens.unmatchBracketsPrefix`: Bracket header prefix when unmatch brackets.
+* `bracketLens.maxBracketHeaderLength`: Bracket header length than this value are displayed with the tail omitted. ( not include prefix )
+* `bracketLens.minBracketScopeLines`: The bracket header is displayed only when the number of lines in the bracket scope is greater than or equal to this value. ( include bracket lines )
+* `bracketLens.languageConfiguration`: Language parsing settings.
+
+## Notes
+
+### For users with language syntax like TypeScript
+
+Fortunately, this extension will probably work generally comfortably in the symbol bracktes type language without any special configuration.
+
+Even for this type of language, details may require the setting of `bracketLens.languageConfiguration`. I would like to accept it as the default setting if you can tell me the setting information in the [issue](https://github.com/wraith13/bracket-lens-vscode/issues) or [pull request](https://github.com/wraith13/bracket-lens-vscode/pulls) for other users in your language.
+
+### For users with language syntax like Ruby
+
+I apologize for the inconvenience, but for word bracket type languages, all word brackets must be set to `bracketLens.languageConfiguration`.
+
+I would like to accept it as the default setting if you can tell me the setting information in the [issue](https://github.com/wraith13/bracket-lens-vscode/issues) or [pull request](https://github.com/wraith13/bracket-lens-vscode/pulls) for other users in your language.
+
+### For users with language syntax like Python
+
+Unfortunately, this extension is not useful for indented scope type languages.
+
+If your language is this type of language, I would like to have this extension disabled in that language by default if you let us know in an [issue](https://github.com/wraith13/bracket-lens-vscode/issues) or [pull request](https://github.com/wraith13/bracket-lens-vscode/pulls).
 
 ## Keyboard shortcut Settings
 
@@ -52,10 +76,7 @@ Command name on `keybindings.json` is diffarent from on Command Pallete. See bel
 
 |on Command Pallete|on keybindings.json|default Keyboard shortcut|
 |-|-|-|
-|`Bracket Lens: Edit Settings`|`bracketLens.editSettings`|Mac:`Command`+`Shift`+`,`, Windows and Linux: `Ctrl`+`Shift`+`,`|
-|`Bracket Lens: Undo Setting`|`bracketLens.undoSetting`|(none)|
-|`Bracket Lens: Redo Setting`|`bracketLens.redoSetting`|(none)|
-|`Bracket Lens: Clear Setting History`|`bracketLens.clearHistory`|(none)|
+|`Bracket Lens: Report Profile`|`bracketLens.reportProfile`|
 
 ## Release Notes
 

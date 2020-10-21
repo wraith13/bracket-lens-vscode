@@ -1,16 +1,29 @@
 {
     "name": "bracket-lens",
     "displayName": "Bracket Lens",
-    "description": "Show bracket head on closing bracket.",
+    "description": "Show bracket header on closing bracket.",
     "icon": "images/bracketlenshex.128.png",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "publisher": "wraith13",
     "license": "SEE LICENSE IN LICENSE_1_0.txt",
     "engines": {
         "vscode": "^1.50.0"
     },
+    "bugs": {
+        "url": "https://github.com/wraith13/bracket-lens-vscode/issues"
+    },
+    "homepage": "https://github.com/wraith13/bracket-lens-vscode",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/wraith13/bracket-lens-vscode.git"
+    },
     "categories": [
         "Other"
+    ],
+    "keywords": [
+        "bracket",
+        "code",
+        "lens"
     ],
     "activationEvents": [
         "*"

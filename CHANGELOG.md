@@ -4,6 +4,16 @@ All notable changes to the "bracket-lens" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.0.0 - 2020-10-21
+
+### Added
+
+- 🎊 Initial release of Brackets Lens. 🎉
+
 ## [Unreleased]
 
-- Initial release
+## 0.0.0 - 2020-10-10
+
+### Added
+
+- Start this project.
