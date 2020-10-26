@@ -301,17 +301,19 @@
                                         "escape": "\\\""
                                     },
                                     {
-                                        "opening": "`",
-                                        "closing": "`",
-                                        "escape": "\\`"
-                                    },
-                                    {
                                         "opening": "'",
                                         "closing": "'",
                                         "escape": "\\'"
                                     }
                                 ],
-                                "multiline": []
+                                "multiline":
+                                [
+                                    {
+                                        "opening": "`",
+                                        "closing": "`",
+                                        "escape": "\\`"
+                                    }
+                                ]
                             }
                         },
                         "description": "%bracketLens.languageConfiguration.description%",
