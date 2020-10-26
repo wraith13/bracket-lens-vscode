@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## ?.?.? - 2020-1?-??
 
+### Fixed
+
+- Fixed an issue where changing the language specification in the editor did not take effect immediately.
+
 ### Changed
 
 - Changed the handling of backquotes in default from inline strings to multiline strings.

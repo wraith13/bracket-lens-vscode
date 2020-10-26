@@ -788,6 +788,13 @@ export const delayUpdateDecoration = (textEditor: vscode.TextEditor): void =>
         delay
     );
 };
+export const delayUpdateDecorationByDocument = (document: vscode.TextDocument): void =>
+{
+    vscode.window.visibleTextEditors
+        .filter(i => undefined !== i.viewColumn)
+        .filter(i => i.document === document)
+        .forEach(i => delayUpdateDecoration(i));
+};
 export const updateAllDecoration = () =>
     vscode.window.visibleTextEditors
         .filter(i => undefined !== i.viewColumn)
@@ -798,14 +805,13 @@ export const onDidChangeActiveTextEditor = (): void =>
     clearDecorationCache();
     activeTextEditor(delayUpdateDecoration);
 };
+export const onDidOpenTextDocument = (document: vscode.TextDocument): void =>
+    delayUpdateDecorationByDocument(document);
 export const onDidCloseTextDocument = clearDecorationCache;
 export const onDidChangeTextDocument = (document: vscode.TextDocument): void =>
 {
     clearDecorationCache(document);
-    vscode.window.visibleTextEditors
-        .filter(i => undefined !== i.viewColumn)
-        .filter(i => i.document === document)
-        .forEach(i => delayUpdateDecoration(i));
+    delayUpdateDecorationByDocument(document);
 };
 export let extensionContext: vscode.ExtensionContext;
 export const activate = async (context: vscode.ExtensionContext) =>
@@ -851,6 +857,7 @@ export const activate = async (context: vscode.ExtensionContext) =>
         ),
         vscode.workspace.onDidChangeWorkspaceFolders(() => onDidChangeWorkspaceFolders()),
         vscode.workspace.onDidChangeTextDocument(event => onDidChangeTextDocument(event.document)),
+        vscode.workspace.onDidOpenTextDocument((document) => onDidOpenTextDocument(document)),
         vscode.workspace.onDidCloseTextDocument((document) => onDidCloseTextDocument(document)),
         vscode.window.onDidChangeActiveTextEditor(() => onDidChangeActiveTextEditor()),
         //vscode.window.onDidChangeTextEditorSelection(() => onDidChangeTextEditorSelection()),
