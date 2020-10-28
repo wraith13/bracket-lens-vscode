@@ -1,4 +1,6 @@
 {
+    "bracketLens.toggleMute.title": "Toggle Mute",
+    "bracketLens.toggleMuteAll.title": "Toggle Mute All",
     "bracketLens.reportProfile.title": "Report Profile",
     "bracketLens.enabled.description": "Enables Brackets Lens",
     "bracketLens.debug.description": "Debug mode.",

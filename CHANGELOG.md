@@ -4,6 +4,12 @@ All notable changes to the "bracket-lens" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.2.0 - 2020-10-??
+
+### Added
+
+- `Bracket Lens: Toggle Mute` command and `Bracket Lens: Toggle Mute All` command.
+
 ## 1.1.0 - 2020-10-27
 
 ### Fixed

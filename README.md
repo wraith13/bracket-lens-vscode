@@ -32,6 +32,8 @@ Enjoy!
 
 ## Commands
 
+* `Bracket Lens: Toggle Mute` : Mute Bracket Lens for the text editor in focus. Execute this command again to unmute.
+* `Bracket Lens: Toggle Mute All` : Mute Bracket Lens for all text editors. Execute this command again to unmute.
 * `Bracket Lens: Report Profile` : Report a profile.
 
 ## Extension Settings
@@ -76,6 +78,8 @@ Command name on `keybindings.json` is diffarent from on Command Pallete. See bel
 
 |on Command Pallete|on keybindings.json|default Keyboard shortcut|
 |-|-|-|
+|`Bracket Lens: Toggle Mute`|`bracketLens.toggleMute`|
+|`Bracket Lens: Toggle Mute All`|`bracketLens.toggleMuteAll`|
 |`Bracket Lens: Report Profile`|`bracketLens.reportProfile`|
 
 ## Release Notes

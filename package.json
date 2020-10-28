@@ -32,6 +32,16 @@
     "contributes": {
         "commands": [
             {
+                "command": "bracketLens.toggleMute",
+                "title": "%bracketLens.toggleMute.title%",
+                "category": "Bracket Lens"
+            },
+            {
+                "command": "bracketLens.toggleMuteAll",
+                "title": "%bracketLens.toggleMuteAll.title%",
+                "category": "Bracket Lens"
+            },
+            {
                 "command": "bracketLens.reportProfile",
                 "title": "%bracketLens.reportProfile.title%",
                 "category": "Bracket Lens"
@@ -88,8 +98,7 @@
                         "description": "%bracketLens.minBracketScopeLines.description%",
                         "scope": "language-overridable"
                     },
-                    "bracketLens.languageConfiguration":
-                    {
+                    "bracketLens.languageConfiguration": {
                         "type": "object",
                         "properties": {
                             "ignoreCase": {
@@ -143,12 +152,10 @@
                                                 "closing": {
                                                     "type": "string"
                                                 },
-                                                "headerMode":
-                                                {
+                                                "headerMode": {
                                                     "type": "string",
                                                     "default": "smart",
-                                                    "enum":
-                                                    [
+                                                    "enum": [
                                                         "before",
                                                         "smart",
                                                         "inner"
@@ -179,12 +186,10 @@
                                                     "type": "string",
                                                     "default": "end"
                                                 },
-                                                "headerMode":
-                                                {
+                                                "headerMode": {
                                                     "type": "string",
                                                     "default": "inner",
-                                                    "enum":
-                                                    [
+                                                    "enum": [
                                                         "before",
                                                         "smart",
                                                         "inner"
@@ -251,8 +256,7 @@
                                 }
                             }
                         },
-                        "default":
-                        {
+                        "default": {
                             "ignoreCase": false,
                             "comments": {
                                 "block": [
@@ -261,40 +265,35 @@
                                         "closing": "*/"
                                     }
                                 ],
-                                "line":
-                                [
+                                "line": [
                                     "//"
                                 ]
                             },
-                            "brackets":
-                            {
-                                "symbol":
-                                [
+                            "brackets": {
+                                "symbol": [
                                     {
                                         "opening": "(",
                                         "closing": ")",
                                         "headerMode": "smart",
-                                        "inters":[]
+                                        "inters": []
                                     },
                                     {
                                         "opening": "[",
                                         "closing": "]",
                                         "headerMode": "smart",
-                                        "inters":[]
+                                        "inters": []
                                     },
                                     {
                                         "opening": "{",
                                         "closing": "}",
                                         "headerMode": "smart",
-                                        "inters":[]
+                                        "inters": []
                                     }
                                 ],
                                 "word": []
                             },
-                            "strings":
-                            {
-                                "inline":
-                                [
+                            "strings": {
+                                "inline": [
                                     {
                                         "opening": "\"",
                                         "closing": "\"",
@@ -306,8 +305,7 @@
                                         "escape": "\\'"
                                     }
                                 ],
-                                "multiline":
-                                [
+                                "multiline": [
                                     {
                                         "opening": "`",
                                         "closing": "`",
@@ -322,42 +320,32 @@
                 }
             }
         ],
-        "configurationDefaults":
-        {
-            "[plaintext]":
-            {
+        "configurationDefaults": {
+            "[plaintext]": {
                 "bracketLens.enabled": false
             },
-            "[csv]":
-            {
+            "[csv]": {
                 "bracketLens.enabled": false
             },
-            "[tsv]":
-            {
+            "[tsv]": {
                 "bracketLens.enabled": false
             },
-            "[markdown]":
-            {
+            "[markdown]": {
                 "bracketLens.enabled": false
             },
-            "[html]":
-            {
+            "[html]": {
                 "bracketLens.enabled": false
             },
-            "[python]":
-            {
+            "[python]": {
                 "bracketLens.enabled": false
             },
-            "[xml]":
-            {
+            "[xml]": {
                 "bracketLens.enabled": false
             },
-            "[xsl]":
-            {
+            "[xsl]": {
                 "bracketLens.enabled": false
             },
-            "[ignore]":
-            {
+            "[ignore]": {
                 "bracketLens.enabled": false
             }
         }

@@ -1,4 +1,6 @@
 {
+    "bracketLens.toggleMute.title": "ミュート ( トグル )",
+    "bracketLens.toggleMuteAll.title": "全てミュート ( トグル )",
     "bracketLens.reportProfile.title": "プロファイル報告",
     "bracketLens.enabled.description": "Brackets Lens を有効化します。",
     "bracketLens.debug.description": "デバッグモード。",
