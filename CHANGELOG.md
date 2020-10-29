@@ -4,7 +4,7 @@ All notable changes to the "bracket-lens" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## 1.2.0 - 2020-10-??
+## 1.2.0 - 2020-10-29
 
 ### Added
 
