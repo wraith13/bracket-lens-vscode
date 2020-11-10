@@ -254,6 +254,12 @@
                                         }
                                     }
                                 }
+                            },
+                            "terminators": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
                             }
                         },
                         "default": {
@@ -312,7 +318,11 @@
                                         "escape": "\\`"
                                     }
                                 ]
-                            }
+                            },
+                            "terminators": [
+                                ";",
+                                ","
+                            ]
                         },
                         "description": "%bracketLens.languageConfiguration.description%",
                         "scope": "language-overridable"

@@ -27,17 +27,18 @@ interface LanguageConfiguration
     {
         block?: ScopeTerms[],
         line?: string[]
-    },
+    };
     brackets?:
     {
         symbol?: BracketTrait[];
         word?: BracketTrait[];
-    }
+    };
     strings?:
     {
         inline?: StringTrait[];
         multiline?: StringTrait[];
-    }
+    };
+    terminators?: string[];
 }
 module Config
 {
@@ -514,8 +515,9 @@ const getBracketHeader =
             .trim().length;
         if ("inner" !== context.entry.headerMode)
         {
-            const topLimit =
-            context.previousEntry?.end.position ??
+            const languageConfiguration = Config.languageConfiguration.get(document.languageId);
+            const terminators = languageConfiguration.terminators ?? [];
+            const topLimit = context.previousEntry?.end.position ??
             (
                 undefined !== context.parentEntry ?
                     position.nextCharacter
@@ -531,7 +533,7 @@ const getBracketHeader =
                 position.nextLine(context.entry.start.position, 0),
             ]);
             const currnetLineHeader = regulateHeader(document.getText(new vscode.Range(lineHead, context.entry.start.position)));
-            if (isValidHeader(currnetLineHeader))
+            if (isValidHeader(currnetLineHeader) && ! terminators.some(i => currnetLineHeader.endsWith(i)))
             {
                 return currnetLineHeader;
             }
@@ -543,7 +545,7 @@ const getBracketHeader =
                     position.nextLine(context.entry.start.position, -1),
                 ]);
                 const previousLineHeader = regulateHeader(document.getText(new vscode.Range(previousLineHead, lineHead)));
-                if (isValidHeader(previousLineHeader))
+                if (isValidHeader(previousLineHeader) && ! terminators.some(i => previousLineHeader.endsWith(i)))
                 {
                     return previousLineHeader;
                 }
