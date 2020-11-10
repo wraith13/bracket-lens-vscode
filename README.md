@@ -40,7 +40,7 @@ Enjoy!
 
 This extension contributes the following settings by [`settings.json`](https://code.visualstudio.com/docs/customization/userandworkspace#_creating-user-and-workspace-settings)( Mac: `Command`+`,`, Windows / Linux: `File` -> `Preferences` -> `User Settings` ):
 
-* `bracketLens.enabled`: Temporarily apply the settings before confirming.
+* `bracketLens.enabled`: Enables Brackets Lens.
 * `bracketLens.debug`: Debug mode.
 * `bracketLens.color.description`: The color of the bracket header that appears after the closing bracket.
 * `bracketLens.prefix.description`: Bracket header prefix.

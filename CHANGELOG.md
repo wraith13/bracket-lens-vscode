@@ -10,6 +10,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - `terminators` setting in `bracketLens.languageConfiguration` setting.
 
+### Fixed
+
+- Clerical error about `bracketLens.enabled` in README.
+
 ## 1.2.0 - 2020-10-29
 
 ### Added
