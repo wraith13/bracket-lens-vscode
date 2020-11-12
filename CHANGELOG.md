@@ -4,6 +4,12 @@ All notable changes to the "bracket-lens" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.3.1 - 2020-11-12
+
+### Fixed
+
+- Fixed an issue that could cause it to work on the output panel.
+
 ## 1.3.0 - 2020-11-10
 
 ### Added
