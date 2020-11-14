@@ -260,6 +260,12 @@
                                 "items": {
                                     "type": "string"
                                 }
+                            },
+                            "ignoreSymbols": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
                             }
                         },
                         "default": {
@@ -322,6 +328,9 @@
                             "terminators": [
                                 ";",
                                 ","
+                            ],
+                            "ignoreSymbols": [
+                                "\\//"
                             ]
                         },
                         "description": "%bracketLens.languageConfiguration.description%",

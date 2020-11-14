@@ -39,6 +39,7 @@ interface LanguageConfiguration
         multiline?: StringTrait[];
     };
     terminators?: string[];
+    ignoreSymbols?: string[];
 }
 module Config
 {
@@ -179,7 +180,9 @@ const parseBrackets = (document: vscode.TextDocument) => profile
         const openingMultilineStrings = languageConfiguration.strings?.multiline?.map(i => regulate(i.opening)) ?? [];
         const escapeMultilineStrings = languageConfiguration.strings?.multiline?.map(i => regulate(i.escape)) ?? [];
         const closingMultilineStrings = languageConfiguration.strings?.multiline?.map(i => regulate(i.closing)) ?? [];
+        const ignoreSymbols = languageConfiguration.ignoreSymbols?.map(i => regulate(i)) ?? [];
         const pattern = (<string[]>[])
+            .concat(ignoreSymbols)
             .concat(openingBlockComments)
             .concat(closingBlockComments)
             .concat(lineComments)
