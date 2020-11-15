@@ -376,7 +376,7 @@
         "watch": "tsc -watch -p ./"
     },
     "dependencies": {
-        "@wraith13/vscel": "^0.0.24"
+        "@wraith13/vscel": "^0.0.28"
     },
     "devDependencies": {
         "@types/vscode": "^1.50.0",
