@@ -781,7 +781,7 @@ export const delayUpdateDecoration = (textEditor: vscode.TextEditor): void =>
         const logUnit = 16 *1024;
         const logRate = Math.pow(Math.max(textLength, logUnit) / logUnit, 1.0 / 2.0);
         //const lang = textEditor.document.languageId;
-        const delay = false ? //isClip(lang, textLength) ?
+        const activeEditorDelay = false ? //isClip(lang, textLength) ?
                 30: // clipDelay.get(lang):
                 logRate *
                 (
@@ -792,6 +792,9 @@ export const delayUpdateDecoration = (textEditor: vscode.TextEditor): void =>
                             0
                     )
                 );
+        const delay = vscode.window.activeTextEditor === textEditor ?
+            activeEditorDelay:
+            ((2 *activeEditorDelay) +500);
         //debug(`document: ${textEditor.document.fileName}, textLength: ${textLength}, logRate: ${logRate}, delay: ${delay}`);
         setTimeout
         (
