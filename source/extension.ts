@@ -794,7 +794,7 @@ export const delayUpdateDecoration = (textEditor: vscode.TextEditor): void =>
                 );
         const delay = vscode.window.activeTextEditor === textEditor ?
             activeEditorDelay:
-            ((2 *activeEditorDelay) +500);
+            ((2 *activeEditorDelay) +500) *(1.0 +(0.2 *(textEditor.viewColumn ?? 0)));
         //debug(`document: ${textEditor.document.fileName}, textLength: ${textLength}, logRate: ${logRate}, delay: ${delay}`);
         setTimeout
         (
