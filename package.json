@@ -3,7 +3,7 @@
     "displayName": "Bracket Lens",
     "description": "Show bracket header on closing bracket.",
     "icon": "images/bracketlenshex.128.png",
-    "version": "1.4.1",
+    "version": "1.4.2",
     "publisher": "wraith13",
     "license": "SEE LICENSE IN LICENSE_1_0.txt",
     "engines": {
