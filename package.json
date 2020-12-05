@@ -372,18 +372,18 @@
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
-        "lint": "eslint src --ext ts",
+        "lint": "eslint source --ext ts",
         "watch": "tsc -watch -p ./"
     },
     "dependencies": {
         "@wraith13/vscel": "^0.0.28"
     },
     "devDependencies": {
-        "@types/vscode": "^1.50.0",
         "@types/node": "^12.11.7",
-        "eslint": "^7.9.0",
+        "@types/vscode": "^1.50.0",
         "@typescript-eslint/eslint-plugin": "^4.1.1",
         "@typescript-eslint/parser": "^4.1.1",
+        "eslint": "^7.9.0",
         "typescript": "^4.0.2",
         "vscode-test": "^1.4.0"
     }
