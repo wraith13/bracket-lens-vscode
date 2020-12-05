@@ -18,7 +18,7 @@ interface BracketTrait extends ScopeTerms
 }
 interface StringTrait extends ScopeTerms
 {
-    escape: string;
+    escape: string[];
 }
 interface LanguageConfiguration
 {
@@ -175,10 +175,10 @@ const parseBrackets = (document: vscode.TextDocument) => profile
         const closingWordBrackets = languageConfiguration.brackets?.word?.map(i => regulate(i.closing)) ?? [];
         const wordBracketsHeader = languageConfiguration.brackets?.word?.map(i => i.headerMode ?? "inner") ?? [];
         const openingInlineStrings = languageConfiguration.strings?.inline?.map(i => regulate(i.opening)) ?? [];
-        const escapeInlineStrings = languageConfiguration.strings?.inline?.map(i => regulate(i.escape)) ?? [];
+        const escapeInlineStrings = languageConfiguration.strings?.inline?.map(i => i.escape.map(regulate))?.reduce((a, b) => a.concat(b), []) ?? [];
         const closingInlineStrings = languageConfiguration.strings?.inline?.map(i => regulate(i.closing)) ?? [];
         const openingMultilineStrings = languageConfiguration.strings?.multiline?.map(i => regulate(i.opening)) ?? [];
-        const escapeMultilineStrings = languageConfiguration.strings?.multiline?.map(i => regulate(i.escape)) ?? [];
+        const escapeMultilineStrings = languageConfiguration.strings?.multiline?.map(i => i.escape.map(regulate))?.reduce((a, b) => a.concat(b), []) ?? [];
         const closingMultilineStrings = languageConfiguration.strings?.multiline?.map(i => regulate(i.closing)) ?? [];
         const ignoreSymbols = languageConfiguration.ignoreSymbols?.map(i => regulate(i)) ?? [];
         const pattern = (<string[]>[])

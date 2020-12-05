@@ -4,6 +4,12 @@ All notable changes to the "bracket-lens" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.4.4 - 2020-12-05
+
+### Fixed
+
+- Fixed an issue where string escaping could not be handled properly in a pattern.
+
 ## 1.4.3 - 2020-12-02
 
 ### Changed

@@ -226,7 +226,10 @@
                                                     "type": "string"
                                                 },
                                                 "escape": {
-                                                    "type": "string"
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
                                                 }
                                             }
                                         }
@@ -248,7 +251,10 @@
                                                     "type": "string"
                                                 },
                                                 "escape": {
-                                                    "type": "string"
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
                                                 }
                                             }
                                         }
@@ -309,19 +315,19 @@
                                     {
                                         "opening": "\"",
                                         "closing": "\"",
-                                        "escape": "\\\""
+                                        "escape": [ "\\\\", "\\\"" ]
                                     },
                                     {
                                         "opening": "'",
                                         "closing": "'",
-                                        "escape": "\\'"
+                                        "escape": [ "\\\\", "\\'" ]
                                     }
                                 ],
                                 "multiline": [
                                     {
                                         "opening": "`",
                                         "closing": "`",
-                                        "escape": "\\`"
+                                        "escape": [ "\\\\", "\\`" ]
                                     }
                                 ]
                             },
