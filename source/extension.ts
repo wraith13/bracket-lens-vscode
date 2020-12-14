@@ -56,7 +56,7 @@ module Config
 let isMutedAll: boolean | undefined = undefined;
 const debug = (output: any) =>
 {
-    if (Config.debug.get(""))
+    if (Config.debug.get())
     {
         console.debug(output);
     }
@@ -159,7 +159,7 @@ const parseBrackets = (document: vscode.TextDocument) => profile
     (): BracketEntry[] =>
     {
         const result:BracketEntry[] = [];
-        const languageConfiguration = Config.languageConfiguration.get(document.languageId);
+        const languageConfiguration = Config.languageConfiguration.get(document);
         const regulate = languageConfiguration.ignoreCase ?
             (text: string) => text.replace(/\s+/, " ").toLowerCase():
             (text: string) => text.replace(/\s+/, " ");
@@ -502,7 +502,7 @@ const getBracketHeader =
     "getBracketHeader",
     (): string =>
     {
-        const maxBracketHeaderLength = Config.maxBracketHeaderLength.get(document.languageId);
+        const maxBracketHeaderLength = Config.maxBracketHeaderLength.get(document);
         const regulateHeader = (text: string) =>
         {
             let result = text.replace(/\s+/gu, " ").trim();
@@ -518,7 +518,7 @@ const getBracketHeader =
             .trim().length;
         if ("inner" !== context.entry.headerMode)
         {
-            const languageConfiguration = Config.languageConfiguration.get(document.languageId);
+            const languageConfiguration = Config.languageConfiguration.get(document);
             const terminators = languageConfiguration.terminators ?? [];
             const topLimit = context.previousEntry?.end.position ??
             (
@@ -604,9 +604,9 @@ export const getBracketDecorationSource = (document: vscode.TextDocument, bracke
     "getBracketDecorationSource",
     () =>
     {
-        const prefix = Config.prefix.get(document.languageId);
-        const unmatchBracketsPrefix = Config.unmatchBracketsPrefix.get(document.languageId);
-        const minBracketScopeLines = Config.minBracketScopeLines.get(document.languageId);
+        const prefix = Config.prefix.get(document);
+        const unmatchBracketsPrefix = Config.unmatchBracketsPrefix.get(document);
+        const minBracketScopeLines = Config.minBracketScopeLines.get(document);
         const result: BracketDecorationSource[] = [];
         const scanner = (context: BracketContext) =>
         {
@@ -665,7 +665,7 @@ export const updateDecoration = (textEditor: vscode.TextEditor) => profile
     () =>
     {
         const editorCache = editorDecorationCache.get(textEditor);
-        if (Config.enabled.get(textEditor.document.languageId))
+        if (Config.enabled.get(textEditor.document))
         {
             const isMuted = undefined !== editorCache?.isMuted ?
                 editorCache.isMuted:
@@ -684,7 +684,7 @@ export const updateDecoration = (textEditor: vscode.TextEditor) => profile
                     //color,
                 });
                 const options: vscode.DecorationOptions[] = [];
-                const color = Config.color.get(textEditor.document.languageId);
+                const color = Config.color.get(textEditor.document);
                 makeSureDocumentDecorationCache(textEditor.document).decorationSource.forEach
                 (
                     i => options.push
@@ -722,7 +722,6 @@ export const updateDecoration = (textEditor: vscode.TextEditor) => profile
 );
 export const onDidChangeConfiguration = () =>
 {
-    Config.root.entries.forEach(i => i.clear());
     clearAllDecorationCache();
     updateAllDecoration();
 };
@@ -769,7 +768,7 @@ const getDocumentTextLength = (document: vscode.TextDocument) => document.offset
 (
     document.lineAt(document.lineCount - 1).range.end
 );
-//const isClip = (lang: string, textLength: number) => clipByVisibleRange.get(lang)(textLength / Math.max(fileSizeLimit.get(lang), 1024));
+//const isClip = (document: vscode.TextDocument, textLength: number) => clipByVisibleRange.get(document)(textLength / Math.max(fileSizeLimit.get(document), 1024));
 const lastUpdateStamp = new Map<vscode.TextEditor, number>();
 export const delayUpdateDecoration = (textEditor: vscode.TextEditor): void =>
 {
@@ -780,15 +779,14 @@ export const delayUpdateDecoration = (textEditor: vscode.TextEditor): void =>
         const textLength = getDocumentTextLength(textEditor.document);
         const logUnit = 16 *1024;
         const logRate = Math.pow(Math.max(textLength, logUnit) / logUnit, 1.0 / 2.0);
-        //const lang = textEditor.document.languageId;
         const activeEditorDelay = false ? //isClip(lang, textLength) ?
-                30: // clipDelay.get(lang):
+                30: // clipDelay.get(textEditor.document):
                 logRate *
                 (
-                    100 + //basicDelay.get(lang) +
+                    100 + //basicDelay.get(textEditor.document) +
                     (
                         undefined === documentDecorationCache.get(textEditor.document) ?
-                            100: // additionalDelay.get(lang):
+                            100: // additionalDelay.get(textEditor.document):
                             0
                     )
                 );
