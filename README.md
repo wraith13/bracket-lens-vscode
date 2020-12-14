@@ -4,6 +4,8 @@
 
 Show bracket header on closing bracket.
 
+⚠ Significant performance issues have been identified in combination with VS Code v1.52.0. Set the default value of `bracketLens.enabled` to false until this issue is resolved.
+
 ## Features
 
 Displays the text in the header part of the scope after the closing brace.

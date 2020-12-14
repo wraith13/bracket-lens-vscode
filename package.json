@@ -3,7 +3,7 @@
     "displayName": "Bracket Lens",
     "description": "Show bracket header on closing bracket.",
     "icon": "images/bracketlenshex.128.png",
-    "version": "1.4.4",
+    "version": "1.4.5",
     "publisher": "wraith13",
     "license": "SEE LICENSE IN LICENSE_1_0.txt",
     "engines": {
@@ -53,7 +53,7 @@
                 "properties": {
                     "bracketLens.enabled": {
                         "type": "boolean",
-                        "default": true,
+                        "default": false,
                         "description": "%bracketLens.enabled.description%",
                         "scope": "language-overridable"
                     },
@@ -315,19 +315,28 @@
                                     {
                                         "opening": "\"",
                                         "closing": "\"",
-                                        "escape": [ "\\\\", "\\\"" ]
+                                        "escape": [
+                                            "\\\\",
+                                            "\\\""
+                                        ]
                                     },
                                     {
                                         "opening": "'",
                                         "closing": "'",
-                                        "escape": [ "\\\\", "\\'" ]
+                                        "escape": [
+                                            "\\\\",
+                                            "\\'"
+                                        ]
                                     }
                                 ],
                                 "multiline": [
                                     {
                                         "opening": "`",
                                         "closing": "`",
-                                        "escape": [ "\\\\", "\\`" ]
+                                        "escape": [
+                                            "\\\\",
+                                            "\\`"
+                                        ]
                                     }
                                 ]
                             },

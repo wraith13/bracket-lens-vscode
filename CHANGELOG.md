@@ -4,6 +4,12 @@ All notable changes to the "bracket-lens" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.4.5 - 2020-12-14
+
+### Changed
+
+- `bracketLens.enabled`'s default value: true -> false ( until performance issue is resolved )
+
 ## 1.4.4 - 2020-12-05
 
 ### Fixed
