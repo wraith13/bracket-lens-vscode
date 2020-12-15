@@ -804,7 +804,7 @@ export const delayUpdateDecoration = (textEditor: vscode.TextEditor): void =>
                     updateDecoration(textEditor);
                 }
             },
-            delay
+            delay *3 +3000
         );
     }
 };

@@ -4,6 +4,12 @@ All notable changes to the "bracket-lens" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.4.6 - 2020-12-15
+
+### Changed
+
+- The update delay has been significantly increased. ( until performance issue is resolved )
+
 ## 1.4.5 - 2020-12-14
 
 ### Changed
