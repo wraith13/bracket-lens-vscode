@@ -1,8 +1,12 @@
 {
     "bracketLens.toggleMute.title": "ミュート ( トグル )",
     "bracketLens.toggleMuteAll.title": "全てミュート ( トグル )",
+    "bracketLens.updateBrackets.title": "ブラケットの更新",
     "bracketLens.reportProfile.title": "プロファイル報告",
-    "bracketLens.enabled.description": "Brackets Lens を有効化します。",
+    "bracketLens.mode.description": "Brackets Lens の動作モード。",
+    "bracketLens.mode.none.description": "動作しません。",
+    "bracketLens.mode.manual.description": "手動モード: `Bracket Lens: Update` コマンドを手動で呼び出す必要があります。",
+    "bracketLens.mode.auto.description": "自動モード: 自動的に表示が更新されます。",
     "bracketLens.debug.description": "デバッグモード。",
     "bracketLens.color.description": "閉じ括弧の後ろに表示されるブラケットヘッダーの色。",
     "bracketLens.prefix.description": "ブラケットヘッダーのプリフィックス。",

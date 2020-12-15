@@ -41,10 +41,16 @@ interface LanguageConfiguration
     terminators?: string[];
     ignoreSymbols?: string[];
 }
+const modeObject = Object.freeze
+({
+    "none": "none",
+    "manual": "manual",
+    "auto": "auto",
+});
 module Config
 {
     export const root = vscel.config.makeRoot(packageJson);
-    export const enabled = root.makeEntry<boolean>("bracketLens.enabled");
+    export const mode = root.makeMapEntry("bracketLens.mode", modeObject);
     export const debug = root.makeEntry<boolean>("bracketLens.debug");
     export const color = root.makeEntry<string>("bracketLens.color");
     export const prefix = root.makeEntry<string>("bracketLens.prefix");
@@ -665,7 +671,7 @@ export const updateDecoration = (textEditor: vscode.TextEditor) => profile
     () =>
     {
         const editorCache = editorDecorationCache.get(textEditor);
-        if (Config.enabled.get(textEditor.document))
+        if ("none" !== Config.mode.getKey(textEditor.document))
         {
             const isMuted = undefined !== editorCache?.isMuted ?
                 editorCache.isMuted:
@@ -772,7 +778,7 @@ const getDocumentTextLength = (document: vscode.TextDocument) => document.offset
 const lastUpdateStamp = new Map<vscode.TextEditor, number>();
 export const delayUpdateDecoration = (textEditor: vscode.TextEditor): void =>
 {
-    if (undefined !== textEditor.viewColumn)
+    if (undefined !== textEditor.viewColumn && "auto" === Config.mode.getKey(textEditor.document))
     {
         const updateStamp = vscel.profiler.getTicks();
         lastUpdateStamp.set(textEditor, updateStamp);
@@ -816,7 +822,7 @@ export const delayUpdateDecorationByDocument = (document: vscode.TextDocument): 
 };
 export const updateAllDecoration = () =>
     vscode.window.visibleTextEditors
-        .forEach(i => delayUpdateDecoration(i));
+        .forEach(i => updateDecoration(i));
 export const onDidChangeWorkspaceFolders = onDidChangeConfiguration;
 export const onDidChangeActiveTextEditor = (): void =>
 {
@@ -839,7 +845,7 @@ export const toggleMute = (textEditor: vscode.TextEditor) =>
         undefined === currentEditorDecorationCache.isMuted ?
             ! isMutedAll:
             ! currentEditorDecorationCache.isMuted;
-    delayUpdateDecoration(textEditor);
+            updateDecoration(textEditor);
 };
 export const activate = async (context: vscode.ExtensionContext) =>
 {
@@ -860,6 +866,11 @@ export const activate = async (context: vscode.ExtensionContext) =>
                 editorDecorationCache.forEach(i => i.isMuted = undefined);
                 updateAllDecoration();
             }
+        ),
+        vscode.commands.registerCommand
+        (
+            `bracketLens.updateBrackets`,
+            () => activeTextEditor(updateDecoration)
         ),
         vscode.commands.registerCommand
         (
@@ -906,6 +917,7 @@ export const activate = async (context: vscode.ExtensionContext) =>
         //vscode.window.onDidChangeActiveColorTheme(() => onDidChangeActiveColorTheme());
         //vscode.window.onDidChangeVisibleTextEditors(textEditers => onDidChangeVisibleTextEditors(textEditers)),
     );
-    updateAllDecoration();
+    vscode.window.visibleTextEditors
+        .forEach(i => delayUpdateDecoration(i));
 };
 export const deactivate = () => {};

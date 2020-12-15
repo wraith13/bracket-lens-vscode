@@ -4,7 +4,7 @@
 
 Show bracket header on closing bracket.
 
-⚠ Significant performance issues have been identified in combination with VS Code v1.52.0. Set the default value of `bracketLens.enabled` to false until this issue is resolved.
+⚠ Significant performance issues have been identified in combination with VS Code v1.52.0. Set the default value of `bracketLens.mode` to `manual` until this issue is resolved.
 
 ## Features
 
@@ -36,13 +36,14 @@ Enjoy!
 
 * `Bracket Lens: Toggle Mute` : Mute Bracket Lens for the text editor in focus. Execute this command again to unmute.
 * `Bracket Lens: Toggle Mute All` : Mute Bracket Lens for all text editors. Execute this command again to unmute.
+* `Bracket Lens: Update Brackets` : You will often need to run this command in manual mode.
 * `Bracket Lens: Report Profile` : Report a profile.
 
 ## Extension Settings
 
 This extension contributes the following settings by [`settings.json`](https://code.visualstudio.com/docs/customization/userandworkspace#_creating-user-and-workspace-settings)( Mac: `Command`+`,`, Windows / Linux: `File` -> `Preferences` -> `User Settings` ):
 
-* `bracketLens.enabled`: Enables Brackets Lens.
+* `bracketLens.mode`: Brackets Lens operating mode.
 * `bracketLens.debug`: Debug mode.
 * `bracketLens.color.description`: The color of the bracket header that appears after the closing bracket.
 * `bracketLens.prefix.description`: Bracket header prefix.
@@ -82,6 +83,7 @@ Command name on `keybindings.json` is diffarent from on Command Pallete. See bel
 |-|-|-|
 |`Bracket Lens: Toggle Mute`|`bracketLens.toggleMute`|
 |`Bracket Lens: Toggle Mute All`|`bracketLens.toggleMuteAll`|
+|`Bracket Lens: Update Brackets`|`bracketLens.updateBrackets`|
 |`Bracket Lens: Report Profile`|`bracketLens.reportProfile`|
 
 ## Release Notes

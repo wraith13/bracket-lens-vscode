@@ -3,7 +3,7 @@
     "displayName": "Bracket Lens",
     "description": "Show bracket header on closing bracket.",
     "icon": "images/bracketlenshex.128.png",
-    "version": "1.4.6",
+    "version": "1.5.0",
     "publisher": "wraith13",
     "license": "SEE LICENSE IN LICENSE_1_0.txt",
     "engines": {
@@ -42,6 +42,11 @@
                 "category": "Bracket Lens"
             },
             {
+                "command": "bracketLens.updateBrackets",
+                "title": "%bracketLens.updateBrackets.title%",
+                "category": "Bracket Lens"
+            },
+            {
                 "command": "bracketLens.reportProfile",
                 "title": "%bracketLens.reportProfile.title%",
                 "category": "Bracket Lens"
@@ -51,10 +56,21 @@
             {
                 "title": "Bracket Lens",
                 "properties": {
-                    "bracketLens.enabled": {
-                        "type": "boolean",
-                        "default": false,
-                        "description": "%bracketLens.enabled.description%",
+                    "bracketLens.mode": {
+                        "type": "string",
+                        "default": "manual",
+                        "enum": [
+                            "none",
+                            "manual",
+                            "auto"
+                        ],
+                        "description": "%bracketLens.mode.description%",
+                        "enumDescriptions": [
+                            "%bracketLens.mode.none.description%",
+                            "%bracketLens.mode.manual.description%",
+                            "%bracketLens.mode.auto.description%"
+                        ],
+
                         "scope": "language-overridable"
                     },
                     "bracketLens.debug": {
@@ -356,31 +372,31 @@
         ],
         "configurationDefaults": {
             "[plaintext]": {
-                "bracketLens.enabled": false
+                "bracketLens.mode": "manual"
             },
             "[csv]": {
-                "bracketLens.enabled": false
+                "bracketLens.mode": "manual"
             },
             "[tsv]": {
-                "bracketLens.enabled": false
+                "bracketLens.mode": "manual"
             },
             "[markdown]": {
-                "bracketLens.enabled": false
+                "bracketLens.mode": "manual"
             },
             "[html]": {
-                "bracketLens.enabled": false
+                "bracketLens.mode": "manual"
             },
             "[python]": {
-                "bracketLens.enabled": false
+                "bracketLens.mode": "manual"
             },
             "[xml]": {
-                "bracketLens.enabled": false
+                "bracketLens.mode": "manual"
             },
             "[xsl]": {
-                "bracketLens.enabled": false
+                "bracketLens.mode": "manual"
             },
             "[ignore]": {
-                "bracketLens.enabled": false
+                "bracketLens.mode": "manual"
             }
         }
     },

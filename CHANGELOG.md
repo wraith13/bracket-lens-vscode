@@ -4,6 +4,16 @@ All notable changes to the "bracket-lens" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.5.0 - 2020-12-16
+
+### Added
+
+- `bracketLens.mode` setting item. ( The original default is `auto`, but until the performance issue is resolved,` manual` is the default. )
+
+### Removed
+
+- `bracketLens.enabled` setting item.
+
 ## 1.4.6 - 2020-12-15
 
 ### Changed
