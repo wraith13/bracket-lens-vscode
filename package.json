@@ -3,7 +3,7 @@
     "displayName": "Bracket Lens",
     "description": "Show bracket header on closing bracket.",
     "icon": "images/bracketlenshex.128.png",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "publisher": "wraith13",
     "license": "SEE LICENSE IN LICENSE_1_0.txt",
     "engines": {
@@ -52,6 +52,20 @@
                 "category": "Bracket Lens"
             }
         ],
+        "keybindings": [
+            {
+                "command": "bracketLens.updateBrackets",
+                "key": "shift+alt+oem_5",
+                "mac": "shift+alt+oem_5",
+                "when": "editorFocus"
+            },
+            {
+                "command": "bracketLens.toggleMuteAll",
+                "key": "shift+alt+oem_6",
+                "mac": "shift+alt+oem_6",
+                "when": "editorFocus"
+            }
+        ],
         "configuration": [
             {
                 "title": "Bracket Lens",
@@ -70,7 +84,6 @@
                             "%bracketLens.mode.manual.description%",
                             "%bracketLens.mode.auto.description%"
                         ],
-
                         "scope": "language-overridable"
                     },
                     "bracketLens.debug": {

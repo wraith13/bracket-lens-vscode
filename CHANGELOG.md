@@ -4,6 +4,13 @@ All notable changes to the "bracket-lens" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.5.1 - 2021-07-14
+
+- add shortcut `shift+alt+\` to execute `bracketLens.updateBrackets` for manual update mode
+- add shortcut `shift+alt+}` to execute `bracketLens.toggleMuteAll`
+
+> Note: we could use the default vscode shortcut `ctrl+shift+\` to jumpToBracket. :D
+
 ## 1.5.0 - 2020-12-16
 
 ### Added
