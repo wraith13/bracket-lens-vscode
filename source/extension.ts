@@ -50,14 +50,14 @@ const modeObject = Object.freeze
 module Config
 {
     export const root = vscel.config.makeRoot(packageJson);
-    export const mode = root.makeMapEntry("bracketLens.mode", modeObject);
-    export const debug = root.makeEntry<boolean>("bracketLens.debug");
-    export const color = root.makeEntry<string>("bracketLens.color");
-    export const prefix = root.makeEntry<string>("bracketLens.prefix");
-    export const unmatchBracketsPrefix = root.makeEntry<string>("bracketLens.unmatchBracketsPrefix");
-    export const maxBracketHeaderLength = root.makeEntry<number>("bracketLens.maxBracketHeaderLength");
-    export const minBracketScopeLines = root.makeEntry<number>("bracketLens.minBracketScopeLines");
-    export const languageConfiguration = root.makeEntry<LanguageConfiguration>("bracketLens.languageConfiguration");
+    export const mode = root.makeMapEntry("bracketLens.mode", "active-text-editor", modeObject);
+    export const debug = root.makeEntry<boolean>("bracketLens.debug", "root-workspace");
+    export const color = root.makeEntry<string>("bracketLens.color", "active-text-editor");
+    export const prefix = root.makeEntry<string>("bracketLens.prefix", "active-text-editor");
+    export const unmatchBracketsPrefix = root.makeEntry<string>("bracketLens.unmatchBracketsPrefix", "active-text-editor");
+    export const maxBracketHeaderLength = root.makeEntry<number>("bracketLens.maxBracketHeaderLength", "active-text-editor");
+    export const minBracketScopeLines = root.makeEntry<number>("bracketLens.minBracketScopeLines", "active-text-editor");
+    export const languageConfiguration = root.makeEntry<LanguageConfiguration>("bracketLens.languageConfiguration", "active-text-editor");
 }
 let isMutedAll: boolean | undefined = undefined;
 const debug = (output: any) =>

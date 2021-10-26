@@ -70,7 +70,6 @@
                             "%bracketLens.mode.manual.description%",
                             "%bracketLens.mode.auto.description%"
                         ],
-
                         "scope": "language-overridable"
                     },
                     "bracketLens.debug": {
@@ -407,7 +406,7 @@
         "watch": "tsc -watch -p ./"
     },
     "dependencies": {
-        "@wraith13/vscel": "^0.0.39"
+        "@wraith13/vscel": "^0.0.53"
     },
     "devDependencies": {
         "@types/vscode": "^1.50.0",
