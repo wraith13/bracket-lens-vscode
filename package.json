@@ -3,11 +3,11 @@
     "displayName": "Bracket Lens",
     "description": "Show bracket header on closing bracket.",
     "icon": "images/bracketlenshex.128.png",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "publisher": "wraith13",
     "license": "SEE LICENSE IN LICENSE_1_0.txt",
     "engines": {
-        "vscode": "^1.50.0"
+        "vscode": "^1.61.0"
     },
     "bugs": {
         "url": "https://github.com/wraith13/bracket-lens-vscode/issues"
@@ -28,7 +28,8 @@
     "activationEvents": [
         "onStartupFinished"
     ],
-    "main": "./out/source/extension.js",
+    "main": "./out/extension.js",
+    "browser": "./out/extension.js",
     "contributes": {
         "commands": [
             {
@@ -400,21 +401,30 @@
         }
     },
     "scripts": {
-        "vscode:prepublish": "npm run compile",
-        "compile": "tsc -p ./",
-        "lint": "eslint src --ext ts",
-        "watch": "tsc -watch -p ./"
+        "pretest": "npm run compile-web",
+        "vscode:prepublish": "npm run package-web",
+        "compile-web": "webpack",
+        "watch-web": "webpack --watch",
+        "package-web": "webpack --mode production --devtool hidden-source-map",
+        "lint": "eslint source --ext ts",
+        "run-in-browser": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. ."
     },
     "dependencies": {
         "@wraith13/vscel": "^0.0.53"
     },
     "devDependencies": {
-        "@types/vscode": "^1.50.0",
-        "@types/node": "^12.11.7",
-        "eslint": "^7.9.0",
-        "@typescript-eslint/eslint-plugin": "^4.1.1",
-        "@typescript-eslint/parser": "^4.1.1",
-        "typescript": "^4.0.2",
-        "vscode-test": "^1.4.0"
+        "@types/vscode": "^1.61.0",
+        "@types/webpack-env": "^1.16.2",
+        "@typescript-eslint/eslint-plugin": "^4.31.1",
+        "@typescript-eslint/parser": "^4.31.1",
+        "@vscode/test-web": "^0.0.13",
+        "assert": "^2.0.0",
+        "eslint": "^7.32.0",
+        "glob": "^7.2.0",
+        "process": "^0.11.10",
+        "ts-loader": "^9.2.5",
+        "typescript": "^4.4.3",
+        "webpack": "^5.52.1",
+        "webpack-cli": "^4.8.0"
     }
 }
