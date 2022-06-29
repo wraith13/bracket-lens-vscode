@@ -82,7 +82,7 @@
                     "bracketLens.color": {
                         "type": "string",
                         "default": "#8888AAAA",
-                        "$ref": "vscode://schemas/textmate-colors#definitions/colorGroup",
+                        "$ref": "vscode://schemas/textmate-colors#/definitions/colorGroup",
                         "description": "%bracketLens.color.description%",
                         "scope": "language-overridable"
                     },
