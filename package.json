@@ -400,6 +400,9 @@
             }
         }
     },
+    "extensionKind": [
+        "ui"
+    ],
     "scripts": {
         "pretest": "npm run compile-web",
         "vscode:prepublish": "npm run package-web",
