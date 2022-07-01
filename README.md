@@ -45,9 +45,10 @@ This extension contributes the following settings by [`settings.json`](https://c
 
 * `bracketLens.mode`: Brackets Lens operating mode.
 * `bracketLens.debug`: Debug mode.
-* `bracketLens.color.description`: The color of the bracket header that appears after the closing bracket.
-* `bracketLens.prefix.description`: Bracket header prefix.
+* `bracketLens.color`: The color of the bracket header that appears after the closing bracket.
+* `bracketLens.prefix`: Bracket header prefix.
 * `bracketLens.unmatchBracketsPrefix`: Bracket header prefix when unmatch brackets.
+* `bracketLens.line`: Include line number in bracket header prefix.
 * `bracketLens.maxBracketHeaderLength`: Bracket header length than this value are displayed with the tail omitted. ( not include prefix )
 * `bracketLens.minBracketScopeLines`: The bracket header is displayed only when the number of lines in the bracket scope is greater than or equal to this value. ( include bracket lines )
 * `bracketLens.languageConfiguration`: Language parsing settings.

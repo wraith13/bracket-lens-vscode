@@ -47,6 +47,13 @@ const modeObject = Object.freeze
     "manual": "manual",
     "auto": "auto",
 });
+const lineObject = Object.freeze
+({
+    "none": (_entry: BracketEntry) => "",
+    "start-line-number": (entry: BracketEntry) => `#${entry.start.position.line +1} `,
+    "end-line-number": (entry: BracketEntry) => `#${entry.end.position.line +1} `,
+    "both-line-numbers": (entry: BracketEntry) => `#${entry.start.position.line +1}-${entry.end.position.line +1} `,
+});
 module Config
 {
     export const root = vscel.config.makeRoot(packageJson);
@@ -55,6 +62,7 @@ module Config
     export const color = root.makeEntry<string>("bracketLens.color", "active-text-editor");
     export const prefix = root.makeEntry<string>("bracketLens.prefix", "active-text-editor");
     export const unmatchBracketsPrefix = root.makeEntry<string>("bracketLens.unmatchBracketsPrefix", "active-text-editor");
+    export const line = root.makeMapEntry("bracketLens.line", "active-text-editor", lineObject);
     export const maxBracketHeaderLength = root.makeEntry<number>("bracketLens.maxBracketHeaderLength", "active-text-editor");
     export const minBracketScopeLines = root.makeEntry<number>("bracketLens.minBracketScopeLines", "active-text-editor");
     export const languageConfiguration = root.makeEntry<LanguageConfiguration>("bracketLens.languageConfiguration", "active-text-editor");
@@ -120,18 +128,18 @@ class EditorDecorationCacheEntry
     public setDirty = () =>
     {
         this.isDirtyValue = true;
-    };
+    }
     public setBracketHeaderInformationDecoration = (bracketHeaderInformationDecoration?: vscode.TextEditorDecorationType) =>
     {
         this.dispose();
         this.bracketHeaderInformationDecoration = bracketHeaderInformationDecoration;
-    };
+    }
     public dispose = () =>
     {
         this.bracketHeaderInformationDecoration?.dispose();
         this.bracketHeaderInformationDecoration = undefined;
         this.isDirtyValue = false;
-    };
+    }
 }
 const documentDecorationCache = new Map<vscode.TextDocument, DocumentDecorationCacheEntry>();
 const makeSureDocumentDecorationCache = (document: vscode.TextDocument) =>
@@ -465,7 +473,7 @@ const parseBrackets = (document: vscode.TextDocument) => profile
                         debug(`unmatch-token: ${JSON.stringify(tokens[i])}`);
                         ++i;
                     }
-                };
+                }
                 profile
                 (
                     "parseBrackets.scan.rest",
@@ -612,6 +620,7 @@ export const getBracketDecorationSource = (document: vscode.TextDocument, bracke
     {
         const prefix = Config.prefix.get(document);
         const unmatchBracketsPrefix = Config.unmatchBracketsPrefix.get(document);
+        const line = Config.line.get(document);
         const minBracketScopeLines = Config.minBracketScopeLines.get(document);
         const result: BracketDecorationSource[] = [];
         const scanner = (context: BracketContext) =>
@@ -636,7 +645,7 @@ export const getBracketDecorationSource = (document: vscode.TextDocument, bracke
                                 position.nextCharacter(context.entry.end.position, -context.entry.end.token.length),
                                 context.entry.end.position
                             ),
-                            bracketHeader: `${context.entry.isUnmatchBrackets ? unmatchBracketsPrefix: prefix}${bracketHeader}`,
+                            bracketHeader: `${context.entry.isUnmatchBrackets ? unmatchBracketsPrefix: prefix}${line(context.entry)}${bracketHeader}`,
                         });
                     }
                 }

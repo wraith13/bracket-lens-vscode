@@ -98,6 +98,24 @@
                         "description": "%bracketLens.unmatchBracketsPrefix.description%",
                         "scope": "language-overridable"
                     },
+                    "bracketLens.line": {
+                        "type": "string",
+                        "default": "both-line-numbers",
+                        "enum": [
+                            "none",
+                            "start-line-number",
+                            "end-line-number",
+                            "both-line-numbers"
+                        ],
+                        "description": "%bracketLens.line.description%",
+                        "enumDescriptions": [
+                            "%bracketLens.line.none.description%",
+                            "%bracketLens.line.start-line-number.description%",
+                            "%bracketLens.line.end-line-number.description%",
+                            "%bracketLens.line.both-line-numbers.description%"
+                        ],
+                        "scope": "language-overridable"
+                    },
                     "bracketLens.maxBracketHeaderLength": {
                         "type": "integer",
                         "default": 64,
