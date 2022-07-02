@@ -16,6 +16,8 @@ Displays the text in the header part of the scope after the closing brace.
 
 ![](./images/screenshot2.png)
 
+![](./images/screenshot3.png)
+
 ## Tutorial
 
 ### 0. ⬇️ Install Bracket Lens

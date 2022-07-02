@@ -4,6 +4,25 @@ All notable changes to the "bracket-lens" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.5.2 - 2022-07-02
+
+### Added
+
+- `bracketLens.line` setting item.
+- Also released on [github.com](https://github.com/wraith13/bracket-lens-vscode/releases)
+
+### Fixed
+
+- Fix for #19 Error msg at the head of every JSON file [PR #21](https://github.com/wraith13/bracket-lens-vscode/pull/21) ( by @MarximusMaximus )
+
+### Changed
+
+- fix: make extension run locally [PR #10](https://github.com/wraith13/bracket-lens-vscode/pull/10) ( by @CertainLach )
+
+### Security
+
+- npm audit fix
+
 ## 1.5.1 - 2021-10-27
 
 ### Added
