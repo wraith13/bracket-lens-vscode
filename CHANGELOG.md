@@ -9,6 +9,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Added
 
 - `on-save` value of `bracketLens.mode` setting item.
+- VSIX download link in README.md
 
 ### Fixed
 
