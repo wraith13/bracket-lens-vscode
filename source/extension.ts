@@ -45,6 +45,7 @@ const modeObject = Object.freeze
 ({
     "none": "none",
     "manual": "manual",
+    "on-save": "on-save",
     "auto": "auto",
 });
 const lineObject = Object.freeze
@@ -787,7 +788,7 @@ const getDocumentTextLength = (document: vscode.TextDocument) => document.offset
 const lastUpdateStamp = new Map<vscode.TextEditor, number>();
 export const delayUpdateDecoration = (textEditor: vscode.TextEditor): void =>
 {
-    if (undefined !== textEditor.viewColumn && "auto" === Config.mode.getKey(textEditor.document))
+    if (undefined !== textEditor.viewColumn)
     {
         const updateStamp = vscel.profiler.getTicks();
         lastUpdateStamp.set(textEditor, updateStamp);
@@ -823,6 +824,12 @@ export const delayUpdateDecoration = (textEditor: vscode.TextEditor): void =>
         );
     }
 };
+export const updateDecorationByDocument = (document: vscode.TextDocument): void =>
+{
+    vscode.window.visibleTextEditors
+        .filter(i => i.document === document)
+        .forEach(i => updateDecoration(i));
+};
 export const delayUpdateDecorationByDocument = (document: vscode.TextDocument): void =>
 {
     vscode.window.visibleTextEditors
@@ -839,12 +846,28 @@ export const onDidChangeActiveTextEditor = (): void =>
     activeTextEditor(delayUpdateDecoration);
 };
 export const onDidOpenTextDocument = (document: vscode.TextDocument): void =>
-    delayUpdateDecorationByDocument(document);
+{
+    const mode = Config.mode.getKey(document);
+    if ("auto" === mode || "on-save" === mode)
+    {
+        delayUpdateDecorationByDocument(document);
+    }
+};
+export const onDidSaveTextDocument = (document: vscode.TextDocument): void =>
+{
+    if ("on-save" === Config.mode.getKey(document))
+    {
+        updateDecorationByDocument(document);
+    }
+};
 export const onDidCloseTextDocument = clearDecorationCache;
 export const onDidChangeTextDocument = (document: vscode.TextDocument): void =>
 {
     clearDecorationCache(document);
-    delayUpdateDecorationByDocument(document);
+    if ("auto" === Config.mode.getKey(document))
+    {
+        delayUpdateDecorationByDocument(document);
+    }
 };
 export let extensionContext: vscode.ExtensionContext;
 export const toggleMute = (textEditor: vscode.TextEditor) =>
@@ -919,6 +942,7 @@ export const activate = async (context: vscode.ExtensionContext) =>
         vscode.workspace.onDidChangeWorkspaceFolders(() => onDidChangeWorkspaceFolders()),
         vscode.workspace.onDidChangeTextDocument(event => onDidChangeTextDocument(event.document)),
         vscode.workspace.onDidOpenTextDocument((document) => onDidOpenTextDocument(document)),
+        vscode.workspace.onDidSaveTextDocument((document) => onDidSaveTextDocument(document)),
         vscode.workspace.onDidCloseTextDocument((document) => onDidCloseTextDocument(document)),
         vscode.window.onDidChangeActiveTextEditor(() => onDidChangeActiveTextEditor()),
         //vscode.window.onDidChangeTextEditorSelection(() => onDidChangeTextEditorSelection()),

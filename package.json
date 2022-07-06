@@ -59,16 +59,18 @@
                 "properties": {
                     "bracketLens.mode": {
                         "type": "string",
-                        "default": "manual",
+                        "default": "on-save",
                         "enum": [
                             "none",
                             "manual",
+                            "on-save",
                             "auto"
                         ],
                         "description": "%bracketLens.mode.description%",
                         "enumDescriptions": [
                             "%bracketLens.mode.none.description%",
                             "%bracketLens.mode.manual.description%",
+                            "%bracketLens.mode.on-save.description%",
                             "%bracketLens.mode.auto.description%"
                         ],
                         "scope": "language-overridable"

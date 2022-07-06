@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## 1.5.3 - 202?-??-??
 
+### Added
+
+- `on-save` value of `bracketLens.mode` setting item.
+
 ### Fixed
 
 - Fixed the description about `bracketLens.mode`: `manual`.

@@ -4,7 +4,7 @@
 
 Show bracket header on closing bracket.
 
-⚠ Significant performance issues have been identified in combination with VS Code v1.52.0. Set the default value of `bracketLens.mode` to `manual` until this issue is resolved.
+⚠ Significant performance issues have been identified in combination with VS Code v1.52.0. Set the default value of `bracketLens.mode` to `on-save` until this issue is resolved.
 
 ## Features
 
