@@ -4,6 +4,12 @@ All notable changes to the "bracket-lens" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.5.4 - 2022-??-??
+
+### Security
+
+- `npm audit fix`
+
 ## 1.5.3 - 2022-07-07
 
 ### Added
@@ -17,7 +23,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Security
 
-- npm audit fix
+- `npm audit fix`
 
 ## 1.5.2 - 2022-07-02
 
@@ -36,7 +42,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Security
 
-- npm audit fix
+- `npm audit fix`
 
 ## 1.5.1 - 2021-10-27
 
